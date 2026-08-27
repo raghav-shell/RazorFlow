@@ -1,7 +1,7 @@
 """Pure domain entity definitions and snapshots."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -78,6 +78,7 @@ class RecoveryCaseSnapshot:
     last_ai_confidence: Optional[float] = None
     next_action_scheduled_at: Optional[datetime] = None
     last_attempt_at: Optional[datetime] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @property

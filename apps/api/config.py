@@ -47,6 +47,19 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = Field(default="redis://localhost:6379/1")
     CELERY_RESULT_BACKEND: str = Field(default="redis://localhost:6379/2")
 
+    # AI & Gemini Configuration
+    GEMINI_API_KEY: Optional[str] = Field(default=None)
+    GEMINI_MODEL: str = Field(default="gemini-2.5-flash")
+    AI_TIMEOUT_SECONDS: float = Field(default=8.0)
+    AI_ENABLED: bool = Field(default=True)
+    AI_PROMPT_VERSION: str = Field(default="v1.0.0")
+
+    # Observability (Non-blocking telemetry)
+    LANGFUSE_ENABLED: bool = Field(default=False)
+    LANGFUSE_PUBLIC_KEY: Optional[str] = Field(default=None)
+    LANGFUSE_SECRET_KEY: Optional[str] = Field(default=None)
+    LANGFUSE_HOST: str = Field(default="https://cloud.langfuse.com")
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
