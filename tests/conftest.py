@@ -2,11 +2,13 @@
 
 import os
 from typing import AsyncGenerator
+from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
 # Set testing environment variables before importing app
 os.environ["ENVIRONMENT"] = "testing"
@@ -47,9 +49,11 @@ class MockRedisClient:
 
 @pytest_asyncio.fixture(scope="function")
 async def async_db_engine():
-    """Creates an isolated in-memory SQLite database engine for testing."""
+    """Creates an isolated in-memory SQLite database engine with StaticPool for testing."""
     engine = create_async_engine(
         "sqlite+aiosqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
         echo=False,
         future=True,
     )
@@ -97,8 +101,10 @@ async def async_client(
     app.dependency_overrides[get_db_session] = override_get_db
     app.dependency_overrides[get_redis] = override_get_redis
 
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
-        yield client
+    with patch("apps.worker.tasks.ingestion.task_process_raw_webhook.delay") as mock_delay:
+        mock_delay.return_value = MagicMock(id="mock-task-id")
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+            yield client
 
     app.dependency_overrides.clear()

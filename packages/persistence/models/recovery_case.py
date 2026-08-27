@@ -26,6 +26,7 @@ from packages.persistence.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 from packages.persistence.types import PortableJSON
 
 if TYPE_CHECKING:
+    from packages.persistence.models.customer import CustomerModel
     from packages.persistence.models.merchant import MerchantModel
     from packages.persistence.models.order import OrderModel
     from packages.persistence.models.recovery_attempt import (
@@ -104,6 +105,7 @@ class RecoveryCaseModel(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     # Relationships
     merchant: Mapped[MerchantModel] = relationship("MerchantModel", back_populates="recovery_cases")
     order: Mapped[OrderModel] = relationship("OrderModel", back_populates="recovery_cases")
+    customer: Mapped[CustomerModel | None] = relationship("CustomerModel")
     attempts: Mapped[list[RecoveryAttemptModel]] = relationship(
         "RecoveryAttemptModel",
         back_populates="case",

@@ -70,7 +70,7 @@ def upgrade() -> None:
     op.create_index("ix_customers_phone", "customers", ["phone"])
 
     # 4. Orders Table
-    order_status_enum = postgresql.ENUM("CREATED", "ATTEMPTED", "PAID", "EXPIRED", "CANCELLED", name="order_status", create_type=True)
+    order_status_enum = postgresql.ENUM("CREATED", "ATTEMPTED", "PAID", "EXPIRED", "CANCELLED", name="order_status", create_type=False)
     order_status_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
@@ -91,7 +91,7 @@ def upgrade() -> None:
     op.create_index("ix_orders_external_order_id", "orders", ["external_order_id"])
 
     # 5. Payments Table
-    payment_status_enum = postgresql.ENUM("CREATED", "AUTHORIZED", "CAPTURED", "FAILED", "REFUNDED", name="payment_status", create_type=True)
+    payment_status_enum = postgresql.ENUM("CREATED", "AUTHORIZED", "CAPTURED", "FAILED", "REFUNDED", name="payment_status", create_type=False)
     payment_status_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
@@ -145,7 +145,7 @@ def upgrade() -> None:
         "EXECUTING", "WAITING_EXTERNAL", "VERIFYING",
         "RECOVERED", "UNRECOVERABLE", "EXPIRED", "STOPPED",
         name="recovery_case_status",
-        create_type=True,
+        create_type=False,
     )
     recovery_case_status_enum.create(op.get_bind(), checkfirst=True)
 
@@ -189,14 +189,14 @@ def upgrade() -> None:
     recovery_action_type_enum = postgresql.ENUM(
         "PAYMENT_LINK", "CUSTOMER_REMINDER", "WAIT_AND_REASSESS", "HUMAN_ESCALATION", "DO_NOTHING",
         name="recovery_action_type",
-        create_type=True,
+        create_type=False,
     )
     recovery_action_type_enum.create(op.get_bind(), checkfirst=True)
 
     policy_verdict_type_enum = postgresql.ENUM(
         "APPROVED", "REJECTED", "ESCALATED", "MODIFIED",
         name="policy_verdict_type",
-        create_type=True,
+        create_type=False,
     )
     policy_verdict_type_enum.create(op.get_bind(), checkfirst=True)
 
@@ -224,7 +224,7 @@ def upgrade() -> None:
     recovery_attempt_status_enum = postgresql.ENUM(
         "DRAFT", "DISPATCHED", "ACKNOWLEDGED", "SUCCEEDED", "FAILED", "TIMED_OUT",
         name="recovery_attempt_status",
-        create_type=True,
+        create_type=False,
     )
     recovery_attempt_status_enum.create(op.get_bind(), checkfirst=True)
 

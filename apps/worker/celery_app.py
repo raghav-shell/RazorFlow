@@ -12,6 +12,7 @@ celery_app = Celery(
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
         "apps.worker.tasks.health",
+        "apps.worker.tasks.ingestion",
     ],
 )
 
