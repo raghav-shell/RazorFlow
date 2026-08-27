@@ -1,4 +1,4 @@
-"""Recovery Cases query endpoints with strict multi-tenant isolation."""
+"""Recovery Cases query and execution endpoints with strict multi-tenant isolation."""
 
 import logging
 import uuid
@@ -10,10 +10,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from apps.api.dependencies import get_db_session
-from packages.domain.enums import RecoveryCaseStatus
+from packages.domain.commands import RecoveryCommand
+from packages.domain.enums import PaymentStatus, RecoveryActionType, RecoveryCaseStatus
+from packages.orchestration.services.action_orchestrator import ActionOrchestrator
+from packages.orchestration.services.verification_service import VerificationService
 from packages.persistence.models.audit_event import AuditEventModel
 from packages.persistence.models.merchant import MerchantModel
+from packages.persistence.models.order import OrderModel
+from packages.persistence.models.payment import PaymentModel
+from packages.persistence.models.recovery_attempt import RecoveryAttemptModel, RecoveryDecisionModel
 from packages.persistence.models.recovery_case import RecoveryCaseModel
+from packages.persistence.models.recovery_outcome import RecoveryOutcomeModel
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +112,6 @@ async def get_recovery_case_endpoint(
 ) -> Dict[str, Any]:
     """
     Returns complete investigation snapshot and audit history for a single recovery case.
-    Strictly verifies merchant boundary to prevent cross-tenant access.
     """
     merchant = await resolve_merchant_by_slug(db, merchant_slug)
 
@@ -189,4 +195,224 @@ async def get_recovery_case_endpoint(
         ],
         "created_at": case.created_at.isoformat() if case.created_at else None,
         "updated_at": case.updated_at.isoformat() if case.updated_at else None,
+    }
+
+
+@router.get("/{case_id}/decisions", summary="Get Decisions for Recovery Case")
+async def get_case_decisions_endpoint(
+    case_id: uuid.UUID,
+    merchant_slug: str = Query(..., description="Merchant unique slug identifier"),
+    db: AsyncSession = Depends(get_db_session),
+) -> List[Dict[str, Any]]:
+    """Returns all AI strategy decisions and policy evaluations for this case."""
+    merchant = await resolve_merchant_by_slug(db, merchant_slug)
+
+    stmt = (
+        select(RecoveryDecisionModel)
+        .where(
+            RecoveryDecisionModel.case_id == case_id,
+            RecoveryDecisionModel.merchant_id == merchant.id,
+        )
+        .order_by(RecoveryDecisionModel.attempt_number.asc())
+    )
+    decisions = (await db.execute(stmt)).scalars().all()
+
+    return [
+        {
+            "id": str(d.id),
+            "attempt_number": d.attempt_number,
+            "eligible_candidates": d.eligible_candidate_actions,
+            "ai_recommended_action": d.ai_recommended_action.value,
+            "ai_confidence": d.ai_confidence,
+            "ai_reasoning": d.ai_reasoning,
+            "policy_verdict": d.policy_verdict.value,
+            "authorized_action": d.authorized_action.value,
+            "policy_rule_triggered": d.policy_rule_triggered,
+            "ai_raw_response": d.ai_raw_response,
+            "decided_at": d.decided_at.isoformat(),
+        }
+        for d in decisions
+    ]
+
+
+@router.get("/{case_id}/attempts", summary="Get Execution Attempts for Recovery Case")
+async def get_case_attempts_endpoint(
+    case_id: uuid.UUID,
+    merchant_slug: str = Query(..., description="Merchant unique slug identifier"),
+    db: AsyncSession = Depends(get_db_session),
+) -> List[Dict[str, Any]]:
+    """Returns all physical execution attempts dispatched for this case."""
+    merchant = await resolve_merchant_by_slug(db, merchant_slug)
+
+    stmt = (
+        select(RecoveryAttemptModel)
+        .where(
+            RecoveryAttemptModel.case_id == case_id,
+            RecoveryAttemptModel.merchant_id == merchant.id,
+        )
+        .order_by(RecoveryAttemptModel.created_at.asc())
+    )
+    attempts = (await db.execute(stmt)).scalars().all()
+
+    return [
+        {
+            "id": str(a.id),
+            "action_type": a.action_type.value,
+            "idempotency_key": a.idempotency_key,
+            "status": a.status.value,
+            "gateway_reference_id": a.gateway_reference_id,
+            "execution_payload": a.execution_payload,
+            "dispatched_at": a.dispatched_at.isoformat() if a.dispatched_at else None,
+            "completed_at": a.completed_at.isoformat() if a.completed_at else None,
+            "error_message": a.error_message,
+        }
+        for a in attempts
+    ]
+
+
+@router.get("/{case_id}/outcome", summary="Get Verified Financial Outcome")
+async def get_case_outcome_endpoint(
+    case_id: uuid.UUID,
+    merchant_slug: str = Query(..., description="Merchant unique slug identifier"),
+    db: AsyncSession = Depends(get_db_session),
+) -> Dict[str, Any]:
+    """Returns verified financial recovery outcome."""
+    merchant = await resolve_merchant_by_slug(db, merchant_slug)
+
+    stmt = select(RecoveryOutcomeModel).where(
+        RecoveryOutcomeModel.case_id == case_id,
+        RecoveryOutcomeModel.merchant_id == merchant.id,
+    )
+    outcome = (await db.execute(stmt)).scalar_one_or_none()
+
+    if not outcome:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Financial outcome not yet established for case '{case_id}'.",
+        )
+
+    return {
+        "id": str(outcome.id),
+        "case_id": str(outcome.case_id),
+        "is_successful": outcome.is_successful,
+        "amount_recovered_cents": outcome.amount_recovered_cents,
+        "amount_recovered_formatted": f"₹{outcome.amount_recovered_cents / 100:.2f}",
+        "cost_incurred_cents": outcome.cost_incurred_cents,
+        "cost_incurred_formatted": f"₹{outcome.cost_incurred_cents / 100:.2f}",
+        "net_recovery_cents": outcome.net_recovery_cents,
+        "net_recovery_formatted": f"₹{outcome.net_recovery_cents / 100:.2f}",
+        "recovery_method": outcome.recovery_method.value if outcome.recovery_method else None,
+        "verification_source": outcome.verification_source,
+        "verified_at": outcome.verified_at.isoformat(),
+    }
+
+
+@router.post("/{case_id}/execute", summary="Execute Latest Authorized Command")
+async def execute_case_command_endpoint(
+    case_id: uuid.UUID,
+    merchant_slug: str = Query(..., description="Merchant unique slug identifier"),
+    db: AsyncSession = Depends(get_db_session),
+) -> Dict[str, Any]:
+    """Executes the latest authorized decision command via ActionOrchestrator."""
+    merchant = await resolve_merchant_by_slug(db, merchant_slug)
+
+    case = await db.get(RecoveryCaseModel, case_id)
+    if not case or case.merchant_id != merchant.id:
+        raise HTTPException(status_code=404, detail="Recovery case not found.")
+
+    # Fetch latest decision
+    dec_stmt = (
+        select(RecoveryDecisionModel)
+        .where(
+            RecoveryDecisionModel.case_id == case_id,
+            RecoveryDecisionModel.merchant_id == merchant.id,
+        )
+        .order_by(RecoveryDecisionModel.attempt_number.desc())
+        .limit(1)
+    )
+    latest_decision = (await db.execute(dec_stmt)).scalar_one_or_none()
+
+    if not latest_decision or latest_decision.authorized_action == RecoveryActionType.DO_NOTHING:
+        raise HTTPException(
+            status_code=400, detail="No authorized actionable command exists for this case."
+        )
+
+    attempt_number = case.current_attempt_count + 1
+    command = RecoveryCommand.create(
+        case_id=case.id,
+        merchant_id=merchant.id,
+        order_id=case.order_id,
+        action_type=latest_decision.authorized_action,
+        attempt_number=attempt_number,
+        amount_cents=case.amount_at_risk_cents,
+        currency=case.currency,
+        deadline_at=case.deadline_at,
+        payload=latest_decision.policy_details,
+    )
+
+    result = await ActionOrchestrator.execute_command(
+        session=db,
+        command=command,
+        decision_id=latest_decision.id,
+    )
+    await db.commit()
+
+    return {
+        "case_id": str(result.case_id),
+        "attempt_id": str(result.attempt_id),
+        "action_type": result.action_type.value,
+        "attempt_status": result.attempt_status.value,
+        "case_status": result.case_status.value,
+        "gateway_reference_id": result.gateway_reference_id,
+        "is_duplicate": result.is_duplicate_execution,
+    }
+
+
+@router.post("/{case_id}/simulate-payment", summary="Simulate Customer Payment for Demo")
+async def simulate_payment_endpoint(
+    case_id: uuid.UUID,
+    merchant_slug: str = Query(..., description="Merchant unique slug identifier"),
+    db: AsyncSession = Depends(get_db_session),
+) -> Dict[str, Any]:
+    """
+    Demo simulation endpoint: Creates a captured payment and triggers financial verification.
+    """
+    merchant = await resolve_merchant_by_slug(db, merchant_slug)
+    case = await db.get(RecoveryCaseModel, case_id)
+    if not case or case.merchant_id != merchant.id:
+        raise HTTPException(status_code=404, detail="Recovery case not found.")
+
+    order = await db.get(OrderModel, case.order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found.")
+
+    # Create captured settling payment
+    payment = PaymentModel(
+        merchant_id=merchant.id,
+        order_id=order.id,
+        external_payment_id=f"pay_sim_{uuid.uuid4().hex[:8]}",
+        amount_cents=case.amount_at_risk_cents,
+        currency=case.currency,
+        status=PaymentStatus.CAPTURED,
+        method="upi",
+    )
+    db.add(payment)
+    await db.flush()
+
+    verif_res = await VerificationService.verify_and_recover_case(
+        session=db,
+        case=case,
+        settling_payment=payment,
+        verification_source="DEMO_SIMULATION",
+    )
+    await db.commit()
+
+    return {
+        "status": "success",
+        "case_id": str(case_id),
+        "is_verified": verif_res.is_verified,
+        "case_status": verif_res.case_status.value,
+        "recovered_amount_cents": verif_res.recovered_amount_cents,
+        "net_recovery_cents": verif_res.net_recovery_cents,
+        "verification_source": verif_res.verification_source,
     }

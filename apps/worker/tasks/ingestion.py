@@ -1,4 +1,4 @@
-"""Celery background tasks for asynchronous raw webhook ingestion and case creation."""
+"""Celery background tasks for asynchronous raw webhook ingestion, case creation, and verification."""
 
 import asyncio
 import json
@@ -14,6 +14,7 @@ from packages.adapters.razorpay.webhooks import parse_razorpay_webhook
 from packages.orchestration.services.case_creation_service import CaseCreationService
 from packages.orchestration.services.customer_enrichment_service import CustomerEnrichmentService
 from packages.orchestration.services.order_payment_sync_service import OrderPaymentSyncService
+from packages.orchestration.services.verification_service import VerificationService
 from packages.persistence.database import get_sessionmaker
 from packages.persistence.models.raw_event import RawWebhookEventModel
 
@@ -71,17 +72,16 @@ async def _execute_ingestion_pipeline(
         payload=parsed_payload,
     )
 
-    # 4. Handle Payment Failure -> Case Creation & Enrichment
     case_id = None
+
+    # 4. Handle Payment Failure -> Case Creation & Enrichment
     if parsed_payload.event_type == "payment.failed" or parsed_payload.status == "failed":
-        # Compute customer enrichment context
         enrichment_context = await CustomerEnrichmentService.enrich_customer_context(
             session=session,
             merchant_id=merchant_id,
             customer_id=customer_id,
         )
 
-        # Create or update recovery case
         case, is_new_case = await CaseCreationService.create_or_update_recovery_case(
             session=session,
             merchant_id=merchant_id,
@@ -93,7 +93,21 @@ async def _execute_ingestion_pipeline(
         )
         case_id = str(case.id)
 
-    # 5. Mark raw event as processed
+    # 5. Handle Payment Capture -> Financial Verification & Recovery Confirmation
+    elif (
+        parsed_payload.event_type in ("payment.captured", "payment_link.paid", "order.paid")
+        or parsed_payload.status == "captured"
+    ):
+        verif_result = await VerificationService.verify_from_webhook_event(
+            session=session,
+            event=parsed_payload,
+            merchant_id=merchant_id,
+        )
+        if verif_result and verif_result.is_verified:
+            case_id = str(verif_result.case_id)
+            logger.info(f"Financial recovery confirmed for Case '{case_id}' via Webhook.")
+
+    # 6. Mark raw event as processed
     raw_event.processed = True
     raw_event.processing_error = None
     await session.flush()
@@ -136,7 +150,7 @@ async def _process_raw_webhook_async(
 def task_process_raw_webhook(self, raw_event_id: str) -> Dict[str, Any]:
     """
     Celery task orchestrating raw webhook ingestion, synchronization,
-    and RecoveryCase aggregate creation.
+    RecoveryCase creation, and financial verification.
     """
     logger.info(f"Executing task_process_raw_webhook for raw_event_id={raw_event_id}")
     try:

@@ -68,14 +68,19 @@ async def async_db_engine():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_db_session(async_db_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Yields a database session bound to the test in-memory database."""
-    session_factory = async_sessionmaker(
+async def async_session_factory(async_db_engine) -> async_sessionmaker[AsyncSession]:
+    """Yields an async sessionmaker bound to the test in-memory database."""
+    return async_sessionmaker(
         bind=async_db_engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    async with session_factory() as session:
+
+
+@pytest_asyncio.fixture(scope="function")
+async def async_db_session(async_session_factory) -> AsyncGenerator[AsyncSession, None]:
+    """Yields a database session bound to the test in-memory database."""
+    async with async_session_factory() as session:
         yield session
 
 

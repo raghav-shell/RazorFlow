@@ -47,6 +47,14 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = Field(default="redis://localhost:6379/1")
     CELERY_RESULT_BACKEND: str = Field(default="redis://localhost:6379/2")
 
+    # Razorpay Provider Safety & Environment Configuration
+    RAZORPAY_MODE: str = Field(default="test")  # "test" or "live"
+    RAZORPAY_PRODUCTION_ENABLED: bool = Field(default=False)  # Explicit fail-closed safety flag
+    RAZORPAY_KEY_ID: Optional[str] = Field(default=None)
+    RAZORPAY_KEY_SECRET: Optional[str] = Field(default=None)
+    RAZORPAY_WEBHOOK_SECRET: Optional[str] = Field(default=None)
+    RAZORPAY_BASE_URL: str = Field(default="https://api.razorpay.com/v1")
+
     # AI & Gemini Configuration
     GEMINI_API_KEY: Optional[str] = Field(default=None)
     GEMINI_MODEL: str = Field(default="gemini-2.5-flash")
