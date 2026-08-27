@@ -20,6 +20,16 @@ class MonetaryAmount:
         if not self.currency or len(self.currency) != 3:
             raise ValueError(f"Invalid 3-letter ISO currency code: {self.currency}")
 
+    @classmethod
+    def from_paise(cls, paise: int, currency: str = "INR") -> "MonetaryAmount":
+        """Factory constructor from integer paise."""
+        return cls(cents=paise, currency=currency)
+
+    @property
+    def amount_in_cents(self) -> int:
+        """Alias for cents."""
+        return self.cents
+
     @property
     def decimal_value(self) -> Decimal:
         """Returns standard decimal representation (e.g. ₹10.50)."""
@@ -66,6 +76,16 @@ class RecoveryProbability:
             raise ValueError(
                 f"Recovery probability must be between 0.0 and 1.0, got: {self.probability}"
             )
+
+    @classmethod
+    def from_float(cls, p: float) -> "RecoveryProbability":
+        """Factory constructor from float probability."""
+        return cls(probability=p)
+
+    @property
+    def value(self) -> float:
+        """Numeric float representation."""
+        return self.probability
 
 
 @dataclass(frozen=True)
