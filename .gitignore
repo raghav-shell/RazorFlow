@@ -31,19 +31,32 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Environment Variables & Secrets
+# Node.js & Next.js
+node_modules/
+.next/
+out/
+build/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.tsbuildinfo
+
+# Environment Variables & Secrets (Prevent committing real credentials)
 .env
 .env.local
+.env.*.local
+.env.production
+.env.staging
 *.pem
 *.key
 
-# IDEs
+# IDEs & OS files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS files
 .DS_Store
 Thumbs.db
 
@@ -51,3 +64,5 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 data/
+postgres_data/
+redis_data/

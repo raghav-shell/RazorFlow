@@ -1,0 +1,85 @@
+{
+  "model_version": "recovery_model_v1",
+  "algorithm": "GradientBoostingClassifier",
+  "random_seed": 42,
+  "training_samples": 7000,
+  "validation_samples": 1500,
+  "test_samples": 1500,
+  "validation_metrics": {
+    "accuracy": 0.7127,
+    "precision": 0.6761,
+    "recall": 0.6792,
+    "f1_score": 0.6776,
+    "roc_auc": 0.7829,
+    "brier_score": 0.1883,
+    "confusion_matrix": [
+      [
+        616,
+        217
+      ],
+      [
+        214,
+        453
+      ]
+    ]
+  },
+  "test_metrics": {
+    "accuracy": 0.7,
+    "precision": 0.6709,
+    "recall": 0.6387,
+    "f1_score": 0.6544,
+    "roc_auc": 0.769,
+    "brier_score": 0.1941,
+    "confusion_matrix": [
+      [
+        624,
+        209
+      ],
+      [
+        241,
+        426
+      ]
+    ]
+  },
+  "top_feature_importances": {
+    "candidate_action_DO_NOTHING": 0.1765,
+    "order_amount_paise": 0.0826,
+    "intervention_cost_paise": 0.0606,
+    "time_since_failure_minutes": 0.0579,
+    "error_reason_card_expired": 0.0545,
+    "customer_risk_tier_HIGH": 0.0414,
+    "failure_category_PERMANENT_INSTRUMENT_DECLINE": 0.0395,
+    "customer_historical_success_count": 0.0348,
+    "error_reason_authentication_failed": 0.0329,
+    "candidate_action_WAIT_AND_REASSESS": 0.0297,
+    "hour_of_day": 0.0287,
+    "error_step_payment_initiation": 0.0283,
+    "failure_category_FRAUD_RISK_BLOCK": 0.0263,
+    "attempt_number": 0.0257,
+    "is_transient": 0.023
+  },
+  "numeric_features": [
+    "order_amount_paise",
+    "is_transient",
+    "customer_historical_success_count",
+    "customer_historical_failure_count",
+    "customer_previous_recovery_success",
+    "attempt_number",
+    "hour_of_day",
+    "day_of_week",
+    "has_active_payment_link",
+    "time_since_failure_minutes",
+    "previous_attempt_count",
+    "intervention_cost_paise"
+  ],
+  "categorical_features": [
+    "payment_method",
+    "failure_category",
+    "error_source",
+    "error_code",
+    "error_step",
+    "error_reason",
+    "customer_risk_tier",
+    "candidate_action"
+  ]
+}

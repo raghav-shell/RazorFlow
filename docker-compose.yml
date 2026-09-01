@@ -35,7 +35,7 @@ services:
 
   api:
     build:
-      context: .
+      context: ./backend
       dockerfile: apps/api/Dockerfile
     container_name: razorflow-api
     restart: unless-stopped
@@ -61,7 +61,7 @@ services:
 
   worker:
     build:
-      context: .
+      context: ./backend
       dockerfile: apps/worker/Dockerfile
     container_name: razorflow-worker
     restart: unless-stopped
@@ -77,6 +77,20 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/1
       - CELERY_RESULT_BACKEND=redis://redis:6379/2
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: razorflow-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
 
 volumes:
   postgres_data:
