@@ -14,28 +14,28 @@ export function CategoryBadge({ category, isTransient, className }: CategoryBadg
   let style = "bg-slate-900/60 text-slate-300 border-slate-700/60";
 
   if (category === "USER_AUTHENTICATION_DROPOFF") {
-    style = "bg-sky-950/60 text-sky-300 border-sky-600/30";
+    style = "bg-sky-950/40 text-sky-300 border-sky-500/30 shadow-sm shadow-sky-500/10";
   } else if (category === "BANK_SYSTEM_OUTAGE") {
-    style = "bg-amber-950/60 text-amber-300 border-amber-600/30";
+    style = "bg-amber-950/40 text-amber-300 border-amber-500/30 shadow-sm shadow-amber-500/10";
   } else if (category === "INSUFFICIENT_FUNDS") {
-    style = "bg-orange-950/60 text-orange-300 border-orange-600/30";
+    style = "bg-orange-950/40 text-orange-300 border-orange-500/30 shadow-sm shadow-orange-500/10";
   } else if (category === "TECHNICAL_GATEWAY_TIMEOUT") {
-    style = "bg-indigo-950/60 text-indigo-300 border-indigo-600/30";
+    style = "bg-indigo-950/40 text-indigo-300 border-indigo-500/30 shadow-sm shadow-indigo-500/10";
   } else if (category === "FRAUD_RISK_BLOCK") {
-    style = "bg-rose-950/60 text-rose-300 border-rose-600/30";
+    style = "bg-rose-950/40 text-rose-300 border-rose-500/30 shadow-sm shadow-rose-500/10";
   }
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border backdrop-blur-md",
         style,
         className
       )}
     >
       <span>{cleanName}</span>
       {isTransient && (
-        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1 rounded uppercase tracking-wider font-bold">
+        <span className="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded-full uppercase tracking-wider font-extrabold">
           Transient
         </span>
       )}

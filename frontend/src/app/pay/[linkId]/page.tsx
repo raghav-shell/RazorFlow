@@ -123,18 +123,18 @@ export default function CustomerPaymentSimulatorPage() {
     caseData.status === "RECOVERED" || simulationStep === "RECOVERED";
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4 pb-20">
+    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 pb-24">
       {/* Top Banner: Simulator Disclaimer */}
-      <div className="mb-6 p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 flex items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2 text-blue-300 font-medium">
+      <div className="mb-8 p-4 rounded-2xl bg-blue-950/40 border border-blue-500/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-lg">
+        <div className="flex items-center gap-2.5 text-blue-300 font-medium">
           <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
           <span>
-            <strong>Demo Customer Checkout Simulator:</strong> Demonstrates the hosted payment recovery flow for Razorpay Test Mode.
+            <strong>Razorpay Hosted Recovery Simulator:</strong> Demonstrates real-time customer re-checkout under Razorpay Test Mode.
           </span>
         </div>
         <Link
           href={`/cases/${caseData.id}`}
-          className="text-xs text-blue-400 hover:text-blue-300 underline shrink-0 font-semibold"
+          className="text-xs text-blue-400 hover:text-blue-300 underline shrink-0 font-bold"
         >
           Back to Case Dossier
         </Link>
@@ -142,94 +142,96 @@ export default function CustomerPaymentSimulatorPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Left Column: Order & Recovery Context */}
-        <div className="md:col-span-5 space-y-5">
-          <div className="p-6 rounded-2xl border border-slate-800 bg-[#0d1322] shadow-xl">
+        <div className="md:col-span-5 space-y-6">
+          <div className="p-6 sm:p-7 rounded-3xl border border-white/[0.08] bg-[#070b1c]/85 backdrop-blur-xl shadow-2xl space-y-5">
             {/* Merchant Identity */}
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-md">
+            <div className="flex items-center gap-3.5 pb-5 border-b border-white/[0.06]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-white shadow-lg shadow-blue-500/20 border border-white/20">
                 RF
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white">Demo Merchant Enterprise</h2>
-                <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" /> Verified Razorpay Merchant
+                <h2 className="text-base font-bold text-white">Demo Merchant Enterprise</h2>
+                <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium mt-0.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Verified Merchant Account
                 </span>
               </div>
             </div>
 
             {/* Order Summary */}
-            <div className="py-4 space-y-3 border-b border-slate-800 text-xs">
+            <div className="py-2 space-y-3.5 border-b border-white/[0.06] text-xs">
               <div className="flex justify-between items-center text-slate-400">
-                <span>Order Reference</span>
-                <span className="font-mono font-semibold text-slate-200">
+                <span className="uppercase text-[10px] font-bold tracking-wider">Order Reference</span>
+                <span className="font-mono font-bold text-white text-xs">
                   {caseData.order?.external_order_id || "order_demo_101"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-slate-400">
-                <span>Customer</span>
+                <span className="uppercase text-[10px] font-bold tracking-wider">Customer</span>
                 <span className="font-medium text-slate-200">
                   {caseData.customer?.name || "Verified Customer"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-slate-400">
-                <span>Previous Issue</span>
-                <span className="text-amber-300 font-medium">
+                <span className="uppercase text-[10px] font-bold tracking-wider">Previous Cause</span>
+                <span className="text-amber-300 font-semibold">
                   {caseData.failure_category.replace(/_/g, " ")}
                 </span>
               </div>
             </div>
 
             {/* Total Amount */}
-            <div className="pt-4 flex justify-between items-baseline">
-              <span className="text-xs text-slate-400 font-semibold uppercase">Total Amount</span>
-              <span className="text-2xl font-bold text-white tracking-tight">
+            <div className="pt-2 flex justify-between items-baseline">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Due</span>
+              <span className="text-3xl font-black text-white tracking-tight font-mono">
                 {formatINR(caseData.amount_at_risk_cents)}
               </span>
             </div>
 
             {/* Recovery Value Badge */}
-            <div className="mt-4 p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>
-                Completing this payment re-secures your reserved order instantly.
+              <span className="leading-relaxed font-medium">
+                Completing this payment re-secures your order reservation instantly.
               </span>
             </div>
           </div>
 
           {/* Security & Non-Repudiation Info */}
-          <div className="p-4 rounded-xl border border-slate-800/80 bg-slate-950/50 text-[11px] text-slate-400 space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-300 font-semibold">
-              <Lock className="w-3.5 h-3.5 text-blue-400" />
-              <span>Bank-Grade 256-Bit Encryption</span>
+          <div className="p-5 rounded-2xl border border-white/[0.06] bg-slate-950/50 text-xs text-slate-400 space-y-2">
+            <div className="flex items-center gap-2 text-slate-200 font-bold">
+              <Lock className="w-4 h-4 text-blue-400" />
+              <span>Bank-Grade 256-Bit SSL Encryption</span>
             </div>
-            <p>
-              Simulated under Razorpay Test Mode with deterministic cryptographic ledger audit.
+            <p className="leading-relaxed">
+              Secured by Razorpay Test Gateway with deterministic SHA-256 cryptographic audit chaining.
             </p>
           </div>
         </div>
 
         {/* Right Column: Interactive Payment Checkout Simulator */}
         <div className="md:col-span-7">
-          <div className="p-6 rounded-2xl border border-slate-800 bg-[#0d1322] shadow-2xl">
-            <h3 className="text-base font-bold text-white mb-1 flex items-center justify-between">
-              <span>Select Payment Method</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-950 border border-blue-500/30 text-blue-300 font-semibold">
-                Test Mode
+          <div className="p-6 sm:p-8 rounded-3xl border border-white/[0.08] bg-[#070b1c]/85 backdrop-blur-xl shadow-2xl space-y-6">
+            <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+              <div>
+                <h3 className="text-lg font-black text-white">Select Payment Instrument</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Choose a checkout method to simulate customer recovery.
+                </p>
+              </div>
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-bold font-mono">
+                TEST MODE
               </span>
-            </h3>
-            <p className="text-xs text-slate-400 mb-5">
-              Choose an instrument below to simulate customer recovery payment.
-            </p>
+            </div>
 
             {/* Payment Method Selector Tabs */}
-            <div className="grid grid-cols-3 gap-2.5 mb-5">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("upi")}
-                className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col gap-1.5 ${
+                className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col gap-1.5 ${
                   paymentMethod === "upi"
-                    ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700"
+                    ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/15"
+                    : "bg-slate-950/60 border-white/[0.06] text-slate-400 hover:border-slate-700"
                 }`}
               >
                 <Smartphone className="w-5 h-5 text-blue-400" />
@@ -240,10 +242,10 @@ export default function CustomerPaymentSimulatorPage() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod("card")}
-                className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col gap-1.5 ${
+                className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col gap-1.5 ${
                   paymentMethod === "card"
-                    ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700"
+                    ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/15"
+                    : "bg-slate-950/60 border-white/[0.06] text-slate-400 hover:border-slate-700"
                 }`}
               >
                 <CreditCard className="w-5 h-5 text-purple-400" />
@@ -254,10 +256,10 @@ export default function CustomerPaymentSimulatorPage() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod("netbanking")}
-                className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col gap-1.5 ${
+                className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col gap-1.5 ${
                   paymentMethod === "netbanking"
-                    ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10"
-                    : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700"
+                    ? "bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/15"
+                    : "bg-slate-950/60 border-white/[0.06] text-slate-400 hover:border-slate-700"
                 }`}
               >
                 <Building2 className="w-5 h-5 text-emerald-400" />
@@ -267,37 +269,37 @@ export default function CustomerPaymentSimulatorPage() {
             </div>
 
             {/* Instrument Detail Inputs */}
-            <div className="mb-6 p-4 rounded-xl border border-slate-800 bg-slate-950/60">
+            <div className="p-4 rounded-2xl border border-white/[0.06] bg-slate-950/80">
               {paymentMethod === "upi" && (
                 <div className="space-y-3">
-                  <label className="text-xs font-semibold text-slate-300 block">
+                  <label className="text-xs font-bold text-slate-300 block">
                     UPI Virtual Payment Address (VPA)
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2.5">
                     <input
                       type="text"
                       value={upiVpa}
                       onChange={(e) => setUpiVpa(e.target.value)}
-                      className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                      placeholder="username@bank"
+                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+                      placeholder="customer@okaxis"
                     />
-                    <div className="px-3 py-2 rounded-lg bg-blue-950/60 border border-blue-500/30 text-[11px] font-semibold text-blue-300 flex items-center gap-1.5">
-                      <Zap className="w-3.5 h-3.5 text-blue-400" /> Fast Intent
+                    <div className="px-3.5 py-2.5 rounded-xl bg-blue-950/60 border border-blue-500/30 text-[11px] font-bold text-blue-300 flex items-center gap-1.5 shrink-0">
+                      <Zap className="w-3.5 h-3.5 text-blue-400" /> Instant Intent
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                    <span className="px-1.5 py-0.5 rounded bg-slate-800">Google Pay</span>
-                    <span className="px-1.5 py-0.5 rounded bg-slate-800">PhonePe</span>
-                    <span className="px-1.5 py-0.5 rounded bg-slate-800">Paytm</span>
-                    <span className="px-1.5 py-0.5 rounded bg-slate-800">BHIM</span>
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 pt-1">
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-white/[0.06] font-mono">Google Pay</span>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-white/[0.06] font-mono">PhonePe</span>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-white/[0.06] font-mono">Paytm UPI</span>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-white/[0.06] font-mono">BHIM</span>
                   </div>
                 </div>
               )}
 
               {paymentMethod === "card" && (
                 <div className="space-y-3">
-                  <div className="text-xs font-semibold text-slate-300">Simulated Card Details</div>
-                  <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono text-xs text-slate-300 flex justify-between">
+                  <div className="text-xs font-bold text-slate-300">Simulated Card Details</div>
+                  <div className="p-3.5 rounded-xl bg-slate-900 border border-white/[0.08] font-mono text-xs text-slate-300 flex justify-between">
                     <span>•••• •••• •••• 4242</span>
                     <span>12/28 • CVV ***</span>
                   </div>
@@ -309,13 +311,13 @@ export default function CustomerPaymentSimulatorPage() {
 
               {paymentMethod === "netbanking" && (
                 <div className="space-y-3">
-                  <div className="text-xs font-semibold text-slate-300">Select Bank</div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="p-2.5 rounded-lg bg-slate-900 border border-blue-500/40 text-white font-medium flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-400" /> HDFC Bank
+                  <div className="text-xs font-bold text-slate-300">Select Bank</div>
+                  <div className="grid grid-cols-2 gap-2.5 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-900 border border-blue-500/40 text-white font-bold flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-blue-400" /> HDFC Bank
                     </div>
-                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-slate-600" /> ICICI Bank
+                    <div className="p-3 rounded-xl bg-slate-900 border border-white/[0.08] text-slate-400 flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-slate-600" /> ICICI Bank
                     </div>
                   </div>
                 </div>
@@ -324,47 +326,47 @@ export default function CustomerPaymentSimulatorPage() {
 
             {/* Simulation Status Stepper */}
             {simulationStep !== "IDLE" && (
-              <div className="mb-6 p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <div className="text-xs font-bold text-white mb-2 flex items-center justify-between">
+              <div className="p-5 rounded-2xl bg-slate-950/90 border border-white/[0.08] space-y-3 shadow-inner">
+                <div className="text-xs font-bold text-white flex items-center justify-between">
                   <span>Recovery Execution Lifecycle</span>
-                  <span className="font-mono text-[10px] text-blue-400 animate-pulse">
+                  <span className="font-mono text-[10px] text-blue-400 font-bold animate-pulse">
                     {simulationStep}
                   </span>
                 </div>
 
-                <div className="space-y-1.5 text-[11px]">
+                <div className="space-y-2 text-[11px]">
                   <div className="flex items-center gap-2 text-emerald-400">
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>PAYMENT SUBMITTED (Simulated Customer Authorize)</span>
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>PAYMENT SUBMITTED (Customer Authorize)</span>
                   </div>
                   <div
                     className={`flex items-center gap-2 ${
                       simulationStep === "SUBMITTING"
-                        ? "text-slate-500"
+                        ? "text-slate-600"
                         : "text-emerald-400"
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>WEBHOOK RECEIVED (`payment.captured` HMAC-SHA256 Auth)</span>
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>WEBHOOK INGESTED (`payment.captured` HMAC-SHA256)</span>
                   </div>
                   <div
                     className={`flex items-center gap-2 ${
                       simulationStep === "SUBMITTING" || simulationStep === "WEBHOOK_RECEIVED"
-                        ? "text-slate-500"
+                        ? "text-slate-600"
                         : "text-emerald-400"
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>PAYMENT VERIFIED (Funds Reconciled against Order)</span>
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>PAYMENT VERIFIED (Reconciled against Order)</span>
                   </div>
                   <div
                     className={`flex items-center gap-2 ${
                       simulationStep === "RECOVERED"
                         ? "text-emerald-300 font-bold"
-                        : "text-slate-500"
+                        : "text-slate-600"
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>
                       RECOVERY CONFIRMED → {formatINR(caseData.amount_at_risk_cents)} RECOVERED
                     </span>
@@ -379,7 +381,7 @@ export default function CustomerPaymentSimulatorPage() {
                 type="button"
                 onClick={handleSimulatePayment}
                 disabled={isProcessing}
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-blue-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-black text-sm shadow-xl shadow-blue-500/30 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-white/20"
               >
                 {isProcessing ? (
                   <>
@@ -394,24 +396,24 @@ export default function CustomerPaymentSimulatorPage() {
                 )}
               </button>
             ) : (
-              <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-center space-y-3">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+              <div className="p-6 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-center space-y-4 shadow-xl">
+                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
                 <div>
-                  <h4 className="text-sm font-bold text-white">Payment Recovered Successfully!</h4>
-                  <p className="text-xs text-emerald-300 mt-0.5">
+                  <h4 className="text-base font-black text-white">Payment Recovered Successfully!</h4>
+                  <p className="text-xs text-emerald-300 mt-1 font-mono">
                     {formatINR(caseData.amount_at_risk_cents)} verified and reconciled into immutable audit ledger.
                   </p>
                 </div>
-                <div className="flex justify-center gap-3 pt-2">
+                <div className="flex flex-wrap justify-center gap-3 pt-2">
                   <Link
                     href={`/cases/${caseData.id}`}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-md shadow-emerald-500/20"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-500/25"
                   >
-                    View Updated Case Dossier
+                    View Case Dossier
                   </Link>
                   <Link
                     href="/"
-                    className="px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition"
+                    className="px-4 py-2 rounded-xl bg-slate-900 border border-white/[0.08] hover:bg-slate-800 text-slate-300 text-xs font-bold transition"
                   >
                     Command Center
                   </Link>

@@ -76,7 +76,7 @@ export function LiveEventFeed() {
   function formatActionLabel(action: string): string {
     switch (action) {
       case "WEBHOOK_INGESTED":
-        return "Payment Failure Ingested (HMAC Auth)";
+        return "Payment Failure Ingested (HMAC Verified)";
       case "DIAGNOSIS_PERFORMED":
         return "ML P_ML & ERV Scored";
       case "STRATEGY_GENERATED":
@@ -93,81 +93,98 @@ export function LiveEventFeed() {
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-[#0d1322] shadow-xl overflow-hidden">
+    <div className="rounded-2xl border border-white/[0.08] bg-[#070b1e]/80 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="p-3.5 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="relative flex items-center justify-center">
-            <Radio className={`w-4 h-4 ${isLive ? "text-emerald-400" : "text-slate-500"}`} />
+      <div className="p-4 bg-slate-950/60 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-emerald-950/80 border border-emerald-500/40">
+            <Radio className={`w-3.5 h-3.5 ${isLive ? "text-emerald-400" : "text-slate-500"}`} />
             {isLive && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             )}
           </div>
-          <span className="text-xs font-bold text-white tracking-tight">
-            Live Telemetry Feed
-          </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-950/80 border border-blue-500/30 text-blue-300 font-semibold">
-            Audit Stream
-          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-white tracking-tight">
+                Live Telemetry Stream
+              </span>
+              <span className="text-[9px] px-2 py-0.2 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 font-bold uppercase tracking-wider">
+                Audit Chain
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400">Cryptographic non-repudiation ledger</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsLive(!isLive)}
-            className={`text-[10px] px-2 py-0.5 rounded border transition cursor-pointer font-semibold ${
+            className={`text-[10px] px-2.5 py-1 rounded-lg border transition cursor-pointer font-bold tracking-wide ${
               isLive
-                ? "bg-emerald-950/60 border-emerald-500/40 text-emerald-300"
+                ? "bg-emerald-950/50 border-emerald-500/40 text-emerald-300 shadow-sm shadow-emerald-500/20"
                 : "bg-slate-900 border-slate-700 text-slate-400"
             }`}
           >
-            {isLive ? "Live (4s)" : "Paused"}
+            {isLive ? "POLLING 4s" : "PAUSED"}
           </button>
           <Link
             href="/audit"
-            className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 transition"
+            className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/[0.04]"
           >
             <Eye className="w-3 h-3" /> Full Ledger
           </Link>
         </div>
       </div>
 
-      {/* Events List */}
-      <div className="divide-y divide-slate-800/50 max-h-[360px] overflow-y-auto">
+      {/* Events Stream */}
+      <div className="divide-y divide-white/[0.04] max-h-[360px] overflow-y-auto p-1">
         {loading ? (
-          <div className="py-8 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
-            <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
-            Connecting to audit stream...
+          <div className="py-12 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
+            <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />
+            <span className="font-mono text-[11px]">Connecting to cryptographic audit stream...</span>
           </div>
         ) : events.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-500">
-            No live events recorded yet. Run a demo scenario to see live stream.
+          <div className="py-12 text-center text-xs text-slate-500">
+            {error || "No telemetry events captured yet."}
           </div>
         ) : (
-          events.map((ev) => (
+          events.map((ev, idx) => (
             <div
-              key={ev.event_hash || `seq-${ev.sequence_number}`}
-              className="p-3 hover:bg-slate-800/20 transition flex items-start gap-2.5 text-xs"
+              key={ev.event_hash || `seq-${ev.sequence_number || idx}`}
+              className="p-3 hover:bg-white/[0.03] transition-colors flex items-start gap-3 rounded-xl my-0.5"
             >
-              <div className="mt-0.5 p-1 rounded-md bg-slate-900 border border-slate-800 shrink-0">
+              {/* Event Icon Node */}
+              <div className="w-7 h-7 rounded-lg bg-[#0c1228] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
                 {getEventIcon(ev.action)}
               </div>
 
+              {/* Event Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-slate-200 truncate">
+                  <span className="text-xs font-semibold text-slate-200 truncate">
                     {formatActionLabel(ev.action)}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400 shrink-0">
-                    #{ev.sequence_number}
+                  <span className="text-[10px] text-slate-500 font-mono shrink-0">
+                    {formatDate(ev.created_at)}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                  <span className="font-mono text-slate-400">
-                    Actor: {ev.actor_type.toLowerCase()} • {ev.actor_id}
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px]">
+                  {/* Sequence Number */}
+                  <span className="font-mono px-1.5 py-0.2 rounded bg-slate-900/80 border border-slate-800 text-slate-400 font-bold">
+                    #{ev.sequence_number}
                   </span>
-                  <span>{formatDate(ev.created_at)}</span>
+
+                  {/* Actor Badge */}
+                  <span className="px-1.5 py-0.2 rounded bg-indigo-950/40 border border-indigo-500/30 text-indigo-300 font-mono">
+                    {ev.actor_type || "SYSTEM"}
+                  </span>
+
+                  {/* Hash Snippet */}
+                  <span className="font-mono text-slate-500 truncate max-w-[120px]" title={ev.event_hash}>
+                    {ev.event_hash ? `${ev.event_hash.substring(0, 10)}...` : ""}
+                  </span>
                 </div>
               </div>
             </div>
@@ -175,10 +192,12 @@ export function LiveEventFeed() {
         )}
       </div>
 
-      {/* Footer Info */}
-      <div className="p-2 bg-slate-950/90 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between px-3">
-        <span>Sequential Cryptographic Hash Chain</span>
-        <span className="font-mono text-emerald-400 font-semibold">SHA-256 Chained</span>
+      {/* Footer Status */}
+      <div className="p-2.5 bg-slate-950/40 border-t border-white/[0.04] text-[10px] text-slate-500 flex items-center justify-between px-4">
+        <span className="font-mono">SHA-256 Non-Repudiation</span>
+        <span className="text-emerald-400 font-semibold flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Tamper Proof
+        </span>
       </div>
     </div>
   );
