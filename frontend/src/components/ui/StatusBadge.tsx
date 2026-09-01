@@ -8,54 +8,54 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  let badgeStyles = "bg-slate-900/80 text-slate-300 border-slate-700/60";
-  let dotColor = "bg-slate-400";
+  let badgeStyles = "bg-white/[0.04] text-[#86868b] border-white/[0.08]";
+  let dotColor = "bg-[#86868b]";
   let halo = "";
 
   switch (status) {
     case "RECOVERED":
-      badgeStyles = "bg-emerald-950/60 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-500/20";
-      dotColor = "bg-emerald-400";
-      halo = "shadow-[0_0_8px_rgba(52,211,153,0.5)]";
+      badgeStyles = "bg-[#30d158]/10 text-[#30d158] border-[#30d158]/25 shadow-[0_0_12px_rgba(48,209,88,0.15)]";
+      dotColor = "bg-[#30d158]";
+      halo = "shadow-[0_0_8px_rgba(48,209,88,0.6)]";
       break;
     case "APPROVED":
     case "EXECUTING":
-      badgeStyles = "bg-blue-950/60 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-500/20";
-      dotColor = "bg-blue-400";
-      halo = "shadow-[0_0_8px_rgba(96,165,250,0.5)]";
+      badgeStyles = "bg-[#0071e3]/10 text-[#64d2ff] border-[#0071e3]/30 shadow-[0_0_12px_rgba(0,113,227,0.15)]";
+      dotColor = "bg-[#64d2ff]";
+      halo = "shadow-[0_0_8px_rgba(100,210,255,0.6)]";
       break;
     case "WAITING_EXTERNAL":
     case "VERIFYING":
-      badgeStyles = "bg-amber-950/60 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/20";
-      dotColor = "bg-amber-400 animate-pulse";
-      halo = "shadow-[0_0_8px_rgba(251,191,36,0.5)]";
+      badgeStyles = "bg-[#ffd60a]/10 text-[#ffd60a] border-[#ffd60a]/30 shadow-[0_0_12px_rgba(255,214,10,0.15)]";
+      dotColor = "bg-[#ffd60a] animate-pulse";
+      halo = "shadow-[0_0_8px_rgba(255,214,10,0.6)]";
       break;
     case "ESCALATED":
-      badgeStyles = "bg-purple-950/60 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-500/20";
-      dotColor = "bg-purple-400";
-      halo = "shadow-[0_0_8px_rgba(192,132,252,0.5)]";
+      badgeStyles = "bg-[#bf5af2]/10 text-[#bf5af2] border-[#bf5af2]/30 shadow-[0_0_12px_rgba(191,90,242,0.15)]";
+      dotColor = "bg-[#bf5af2]";
+      halo = "shadow-[0_0_8px_rgba(191,90,242,0.6)]";
       break;
     case "UNRECOVERABLE":
     case "EXPIRED":
     case "STOPPED":
     case "REJECTED":
-      badgeStyles = "bg-rose-950/60 text-rose-300 border-rose-500/40 shadow-sm shadow-rose-500/20";
-      dotColor = "bg-rose-400";
-      halo = "shadow-[0_0_8px_rgba(251,113,133,0.5)]";
+      badgeStyles = "bg-[#ff453a]/10 text-[#ff453a] border-[#ff453a]/25 shadow-[0_0_12px_rgba(255,69,58,0.15)]";
+      dotColor = "bg-[#ff453a]";
+      halo = "shadow-[0_0_8px_rgba(255,69,58,0.6)]";
       break;
     case "DETECTED":
     case "ENRICHING":
     case "DIAGNOSING":
-      badgeStyles = "bg-cyan-950/60 text-cyan-300 border-cyan-500/40 shadow-sm shadow-cyan-500/20";
-      dotColor = "bg-cyan-400 animate-pulse";
-      halo = "shadow-[0_0_8px_rgba(34,211,238,0.5)]";
+      badgeStyles = "bg-[#64d2ff]/10 text-[#64d2ff] border-[#64d2ff]/25 shadow-[0_0_12px_rgba(100,210,255,0.15)]";
+      dotColor = "bg-[#64d2ff] animate-pulse";
+      halo = "shadow-[0_0_8px_rgba(100,210,255,0.6)]";
       break;
   }
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase border backdrop-blur-md",
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium tracking-wide uppercase border backdrop-blur-md transition-all duration-200",
         badgeStyles,
         className
       )}

@@ -258,16 +258,20 @@ export default function CommandCenterPage() {
               ))}
             </div>
 
-            {/* Minimal Search Input */}
+            {/* Minimal Search Input with ⌘K Badge */}
             <div className="relative flex-1 max-w-xs">
               <Search className="w-3.5 h-3.5 text-[#86868b] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
+                id="search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search order or customer..."
-                className="apple-input w-full pl-9 pr-3 py-1.5 text-xs text-white placeholder:text-[#6e6e73]"
+                className="apple-input w-full pl-9 pr-12 py-1.5 text-xs text-white placeholder:text-[#6e6e73]"
               />
+              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] text-[9px] font-mono text-[#86868b]">
+                ⌘K
+              </kbd>
             </div>
           </div>
 
@@ -314,8 +318,9 @@ export default function CommandCenterPage() {
                   ) : (
                     filteredCases.map((c) => {
                       const orderId = c.order?.external_order_id || "ord_unknown";
+                      const probNum = c.recovery_probability ? Math.round(c.recovery_probability * 100) : 0;
                       const prob = c.recovery_probability
-                        ? `${(c.recovery_probability * 100).toFixed(0)}%`
+                        ? `${probNum}%`
                         : "—";
 
                       return (
@@ -348,37 +353,34 @@ export default function CommandCenterPage() {
                             </div>
                             {c.amount_recovered_cents > 0 && (
                               <div className="text-[10px] text-[#30d158] font-mono font-medium">
-                                +{formatINR(c.amount_recovered_cents)} settled
+                                Rec: {formatINR(c.amount_recovered_cents)}
                               </div>
                             )}
                           </td>
 
-                          {/* Recovery Score */}
+                          {/* P_ML Yield with Mini Bar */}
                           <td className="py-4 px-5">
                             <div className="flex items-center gap-2">
-                              <div className="w-12 bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-[#0071e3] rounded-full"
-                                  style={{
-                                    width: `${Math.min(
-                                      100,
-                                      (c.recovery_probability || 0) * 100
-                                    )}%`,
-                                  }}
-                                />
-                              </div>
-                              <span className="font-mono text-xs text-[#86868b]">
+                              <span className="font-mono font-semibold text-[#64d2ff] text-xs">
                                 {prob}
                               </span>
+                              {c.recovery_probability && (
+                                <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden hidden sm:block">
+                                  <div
+                                    className="h-full bg-[#64d2ff] rounded-full"
+                                    style={{ width: `${probNum}%` }}
+                                  />
+                                </div>
+                              )}
                             </div>
                           </td>
 
-                          {/* Status */}
+                          {/* Status Badge */}
                           <td className="py-4 px-5">
                             <StatusBadge status={c.status} />
                           </td>
 
-                          {/* Actions */}
+                          {/* Inspect Dossier Action */}
                           <td className="py-4 px-5 text-right">
                             <Link
                               href={`/cases/${c.id}`}

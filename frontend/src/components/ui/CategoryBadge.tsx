@@ -11,31 +11,31 @@ interface CategoryBadgeProps {
 export function CategoryBadge({ category, isTransient, className }: CategoryBadgeProps) {
   const cleanName = (category || "UNKNOWN").replace(/_/g, " ");
 
-  let style = "bg-slate-900/60 text-slate-300 border-slate-700/60";
+  let style = "bg-white/[0.04] text-[#86868b] border-white/[0.08]";
 
   if (category === "USER_AUTHENTICATION_DROPOFF") {
-    style = "bg-sky-950/40 text-sky-300 border-sky-500/30 shadow-sm shadow-sky-500/10";
+    style = "bg-[#0071e3]/10 text-[#64d2ff] border-[#0071e3]/30";
   } else if (category === "BANK_SYSTEM_OUTAGE") {
-    style = "bg-amber-950/40 text-amber-300 border-amber-500/30 shadow-sm shadow-amber-500/10";
+    style = "bg-[#ffd60a]/10 text-[#ffd60a] border-[#ffd60a]/30";
   } else if (category === "INSUFFICIENT_FUNDS") {
-    style = "bg-orange-950/40 text-orange-300 border-orange-500/30 shadow-sm shadow-orange-500/10";
+    style = "bg-[#ff9f0a]/10 text-[#ff9f0a] border-[#ff9f0a]/30";
   } else if (category === "TECHNICAL_GATEWAY_TIMEOUT") {
-    style = "bg-indigo-950/40 text-indigo-300 border-indigo-500/30 shadow-sm shadow-indigo-500/10";
+    style = "bg-[#bf5af2]/10 text-[#bf5af2] border-[#bf5af2]/30";
   } else if (category === "FRAUD_RISK_BLOCK") {
-    style = "bg-rose-950/40 text-rose-300 border-rose-500/30 shadow-sm shadow-rose-500/10";
+    style = "bg-[#ff453a]/10 text-[#ff453a] border-[#ff453a]/30";
   }
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border backdrop-blur-md",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border backdrop-blur-md",
         style,
         className
       )}
     >
       <span>{cleanName}</span>
       {isTransient && (
-        <span className="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.2 rounded-full uppercase tracking-wider font-extrabold">
+        <span className="text-[9px] bg-[#ffd60a]/20 text-[#ffd60a] border border-[#ffd60a]/40 px-1.5 py-0.2 rounded-full uppercase tracking-wider font-mono font-semibold">
           Transient
         </span>
       )}
