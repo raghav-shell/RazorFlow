@@ -62,6 +62,48 @@ body {
   100% { transform: scaleY(0.4); }
 }
 
+@keyframes aurora-slow {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(50px, 30px, 0) scale(1.08);
+  }
+}
+
+@keyframes aurora-reverse {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-40px, -40px, 0) scale(1.1);
+  }
+}
+
+@keyframes aurora-subtle {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(30px, -20px, 0) scale(1.05);
+  }
+}
+
+.animate-aurora-slow {
+  animation: aurora-slow 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-aurora-reverse {
+  animation: aurora-reverse 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-aurora-subtle {
+  animation: aurora-subtle 26s ease-in-out infinite;
+  will-change: transform;
+}
+
 .animate-wave-1 { animation: wave-pulse 1.2s ease-in-out infinite; }
 .animate-wave-2 { animation: wave-pulse 1.2s ease-in-out 0.2s infinite; }
 .animate-wave-3 { animation: wave-pulse 1.2s ease-in-out 0.4s infinite; }
