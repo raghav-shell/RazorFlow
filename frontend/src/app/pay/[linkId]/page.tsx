@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,10 +18,14 @@ import {
   Sparkles,
   Radio,
   Wifi,
+  ScanFace,
+  QrCode,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { RecoveryCase } from "@/lib/api/types";
 import { formatINR } from "@/lib/utils";
+import { soundFX } from "@/lib/audio/soundFX";
+import { RecoveryCelebration } from "@/components/ui/RecoveryCelebration";
 
 export default function CustomerPaymentSimulatorPage() {
   const params = useParams();
@@ -42,6 +46,32 @@ export default function CustomerPaymentSimulatorPage() {
     "IDLE" | "SUBMITTING" | "WEBHOOK_RECEIVED" | "VERIFYING" | "RECOVERED"
   >("IDLE");
   const [simulationResult, setSimulationResult] = useState<any | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  // 3D Card Physics State
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardRotate, setCardRotate] = useState({ x: 0, y: 0 });
+  const [sheenPos, setSheenPos] = useState({ x: 50, y: 50 });
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -12;
+    const rotateY = ((x - centerX) / centerX) * 12;
+
+    setCardRotate({ x: rotateX, y: rotateY });
+    setSheenPos({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
+  };
+
+  const handleCardMouseLeave = () => {
+    setCardRotate({ x: 0, y: 0 });
+    setSheenPos({ x: 50, y: 50 });
+  };
 
   async function loadCase() {
     if (!caseId) {
@@ -65,15 +95,18 @@ export default function CustomerPaymentSimulatorPage() {
 
   async function handleSimulatePayment() {
     if (!caseData) return;
+    soundFX.playPulse();
     setIsProcessing(true);
     setError(null);
     setSimulationStep("SUBMITTING");
 
     try {
       await new Promise((r) => setTimeout(r, 600));
+      soundFX.playClick();
       setSimulationStep("WEBHOOK_RECEIVED");
 
       await new Promise((r) => setTimeout(r, 600));
+      soundFX.playClick();
       setSimulationStep("VERIFYING");
 
       const res = await apiClient.simulatePayment("demo-store", caseData.id);
@@ -81,6 +114,7 @@ export default function CustomerPaymentSimulatorPage() {
       await new Promise((r) => setTimeout(r, 500));
       setSimulationResult(res);
       setSimulationStep("RECOVERED");
+      setShowCelebration(true);
       await loadCase();
     } catch (err: any) {
       setError(err?.message || "Payment simulation failed.");
@@ -103,7 +137,7 @@ export default function CustomerPaymentSimulatorPage() {
     return (
       <div className="max-w-md mx-auto my-16 p-8 rounded-3xl apple-card text-center space-y-4">
         <AlertCircle className="w-10 h-10 text-[#ff453a] mx-auto" />
-        <h2 className="text-lg font-semibold text-white">Checkout Unavailable</h2>
+        <h2 className="text-lg font-semibold text-white">Checkout Session Expired</h2>
         <p className="text-xs text-[#86868b]">{error || "Case record not found."}</p>
         <Link
           href="/"
@@ -120,6 +154,13 @@ export default function CustomerPaymentSimulatorPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 pb-28 space-y-8">
+      {/* Particle Fountain on Recovery */}
+      <RecoveryCelebration
+        show={showCelebration}
+        amountFormatted={formatINR(caseData.amount_at_risk_cents)}
+        onComplete={() => setShowCelebration(false)}
+      />
+
       {/* Top Banner */}
       <div className="p-3.5 rounded-full apple-card flex items-center justify-between px-5 text-xs">
         <div className="flex items-center gap-2 text-white">
@@ -139,26 +180,39 @@ export default function CustomerPaymentSimulatorPage() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Left Column: Titanium Card & Summary */}
         <div className="md:col-span-5 space-y-6">
-          {/* Apple Titanium Card Mockup */}
-          <div className="relative h-56 rounded-3xl p-6 bg-gradient-to-br from-[#1c1c1e] via-[#121214] to-[#08080a] border-[0.5px] border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex flex-col justify-between overflow-hidden group">
-            {/* Ambient Card Sheen */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.04] to-transparent pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+          {/* Apple Titanium Card with Interactive 3D Physics */}
+          <div
+            ref={cardRef}
+            onMouseMove={handleCardMouseMove}
+            onMouseLeave={handleCardMouseLeave}
+            style={{
+              transform: `perspective(1000px) rotateX(${cardRotate.x}deg) rotateY(${cardRotate.y}deg)`,
+              transition: "transform 0.15s ease-out",
+            }}
+            className="relative h-56 rounded-3xl p-6 bg-gradient-to-br from-[#242429] via-[#141418] to-[#0a0a0d] border-[0.5px] border-white/25 shadow-[0_30px_70px_rgba(0,0,0,0.9)] flex flex-col justify-between overflow-hidden cursor-pointer select-none"
+          >
+            {/* Dynamic Holographic Cursor Sheen */}
+            <div
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+              style={{
+                background: `radial-gradient(circle at ${sheenPos.x}% ${sheenPos.y}%, rgba(255,255,255,0.18) 0%, rgba(100,210,255,0.06) 40%, transparent 80%)`,
+              }}
+            />
 
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start z-10">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs text-white">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs text-white border border-white/20">
                   RF
                 </div>
-                <span className="text-xs font-semibold text-white tracking-tight">RazorFlow Pay</span>
+                <span className="text-xs font-semibold text-white tracking-tight">RazorFlow Titanium</span>
               </div>
-              <Wifi className="w-5 h-5 text-white/40 rotate-90" />
+              <Wifi className="w-5 h-5 text-white/50 rotate-90" />
             </div>
 
-            {/* Micro Chip Graphic */}
-            <div className="w-10 h-8 rounded-md bg-gradient-to-br from-[#e5e5ea] to-[#8e8e93] border border-white/40 opacity-80" />
+            {/* Gold EMV Chip Graphic */}
+            <div className="w-10 h-8 rounded-md bg-gradient-to-br from-[#ffd60a] via-[#ff9f0a] to-[#d4af37] border border-amber-300/60 shadow-sm opacity-90 z-10" />
 
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-end z-10">
               <div>
                 <div className="text-[10px] text-[#86868b] font-mono uppercase">Order Ref</div>
                 <div className="text-xs font-mono font-semibold text-white">
@@ -208,7 +262,10 @@ export default function CustomerPaymentSimulatorPage() {
             <div className="grid grid-cols-3 gap-2.5">
               <button
                 type="button"
-                onClick={() => setPaymentMethod("upi")}
+                onClick={() => {
+                  soundFX.playClick();
+                  setPaymentMethod("upi");
+                }}
                 className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col gap-1 ${
                   paymentMethod === "upi"
                     ? "bg-white/10 border-white/20 text-white shadow-sm"
@@ -222,7 +279,10 @@ export default function CustomerPaymentSimulatorPage() {
 
               <button
                 type="button"
-                onClick={() => setPaymentMethod("card")}
+                onClick={() => {
+                  soundFX.playClick();
+                  setPaymentMethod("card");
+                }}
                 className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col gap-1 ${
                   paymentMethod === "card"
                     ? "bg-white/10 border-white/20 text-white shadow-sm"
@@ -236,7 +296,10 @@ export default function CustomerPaymentSimulatorPage() {
 
               <button
                 type="button"
-                onClick={() => setPaymentMethod("netbanking")}
+                onClick={() => {
+                  soundFX.playClick();
+                  setPaymentMethod("netbanking");
+                }}
                 className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col gap-1 ${
                   paymentMethod === "netbanking"
                     ? "bg-white/10 border-white/20 text-white shadow-sm"
@@ -280,92 +343,106 @@ export default function CustomerPaymentSimulatorPage() {
 
               {paymentMethod === "netbanking" && (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium text-[#86868b]">Select Bank</div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="p-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-semibold flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#0071e3]" /> HDFC Bank
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[#86868b] flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-white/20" /> ICICI Bank
-                    </div>
+                  <div className="text-xs font-medium text-[#86868b]">Simulated Bank Gateway</div>
+                  <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white flex justify-between">
+                    <span>HDFC Bank (Retail NetBanking)</span>
+                    <span className="text-[#30d158] font-mono font-semibold">Online (99.8%)</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Stepper Status */}
+            {/* Simulation Progress Stepper */}
             {simulationStep !== "IDLE" && (
-              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-[#86868b]">
-                  <span>Execution Status</span>
-                  <span className="font-mono text-[#64d2ff] font-semibold">{simulationStep}</span>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-3">
+                <div className="text-[11px] font-semibold text-white uppercase tracking-wider">
+                  Settlement Verification Pipeline
                 </div>
-                <div className="space-y-1.5 text-[11px] text-[#30d158]">
+                <div className="space-y-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>Payment Authorized on Razorpay Test Gateway</span>
+                    {simulationStep === "SUBMITTING" ? (
+                      <RefreshCw className="w-3.5 h-3.5 text-[#0071e3] animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#30d158]" />
+                    )}
+                    <span className="text-white">Authorizing transaction on mock gateway</span>
                   </div>
-                  {simulationStep !== "SUBMITTING" && (
+
+                  {(simulationStep === "WEBHOOK_RECEIVED" ||
+                    simulationStep === "VERIFYING" ||
+                    simulationStep === "RECOVERED") && (
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                      <span>HMAC-SHA256 Webhook Ingested</span>
+                      {simulationStep === "WEBHOOK_RECEIVED" ? (
+                        <RefreshCw className="w-3.5 h-3.5 text-[#0071e3] animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#30d158]" />
+                      )}
+                      <span className="text-white">HMAC-SHA256 Webhook ingested</span>
                     </div>
                   )}
-                  {simulationStep === "RECOVERED" && (
-                    <div className="flex items-center gap-2 font-semibold text-white">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#30d158] shrink-0" />
-                      <span>Reconciled & Added to Hash-Chain</span>
+
+                  {(simulationStep === "VERIFYING" ||
+                    simulationStep === "RECOVERED") && (
+                    <div className="flex items-center gap-2">
+                      {simulationStep === "VERIFYING" ? (
+                        <RefreshCw className="w-3.5 h-3.5 text-[#0071e3] animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#30d158]" />
+                      )}
+                      <span className="text-white">Cryptographic ledger block minted</span>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Action CTA */}
+            {/* Primary Action Button */}
             {!isAlreadyRecovered ? (
               <button
                 type="button"
                 onClick={handleSimulatePayment}
                 disabled={isProcessing}
-                className="w-full py-3.5 px-5 rounded-full bg-white hover:bg-[#e5e5ea] text-black font-semibold text-xs shadow-[0_10px_30px_rgba(255,255,255,0.2)] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3.5 px-4 rounded-full bg-white hover:bg-[#e5e5ea] text-black font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_rgba(255,255,255,0.2)] hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-50"
               >
                 {isProcessing ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin text-[#0071e3]" />
-                    <span>Processing Payment Simulation...</span>
+                    <span>Processing Payment Capture...</span>
                   </>
                 ) : (
                   <>
-                    <span>Pay {formatINR(caseData.amount_at_risk_cents)} & Complete Recovery</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ScanFace className="w-4 h-4 text-[#0071e3]" />
+                    <span>Authorize & Pay {formatINR(caseData.amount_at_risk_cents)}</span>
                   </>
                 )}
               </button>
             ) : (
-              <div className="p-5 rounded-2xl bg-[#30d158]/10 border border-[#30d158]/30 text-center space-y-3">
-                <CheckCircle2 className="w-8 h-8 text-[#30d158] mx-auto" />
-                <div>
-                  <h4 className="text-sm font-semibold text-white">Payment Recovered Successfully</h4>
-                  <p className="text-xs text-[#86868b] mt-0.5">
-                    {formatINR(caseData.amount_at_risk_cents)} verified and settled.
-                  </p>
-                </div>
-                <div className="flex justify-center gap-2 pt-1">
-                  <Link
-                    href={`/cases/${caseData.id}`}
-                    className="px-4 py-1.5 rounded-full bg-[#30d158] hover:bg-[#28cd41] text-black text-xs font-semibold transition"
-                  >
-                    View Case Dossier
-                  </Link>
-                  <Link
-                    href="/"
-                    className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition"
-                  >
-                    Cockpit
-                  </Link>
-                </div>
+              <div className="p-4 rounded-2xl bg-[#30d158]/10 border border-[#30d158]/30 text-center space-y-2">
+                <CheckCircle2 className="w-6 h-6 text-[#30d158] mx-auto" />
+                <div className="text-sm font-semibold text-white">Payment Recovered & Verified</div>
+                <p className="text-xs text-[#86868b]">
+                  Settlement reconciled into immutable ledger.
+                </p>
+                <Link
+                  href={`/cases/${caseData.id}`}
+                  className="inline-flex items-center gap-1.5 text-xs text-[#64d2ff] hover:text-white font-medium mt-1"
+                >
+                  <span>Return to Case Dossier</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             )}
+
+            {/* Footer Trust Bar */}
+            <div className="flex items-center justify-center gap-4 text-[10px] text-[#86868b] pt-2 border-t border-white/[0.04]">
+              <span className="flex items-center gap-1">
+                <Lock className="w-3 h-3 text-[#30d158]" /> 256-Bit SSL
+              </span>
+              <span>•</span>
+              <span>PCI-DSS Level 1</span>
+              <span>•</span>
+              <span>Instant Bank Confirmation</span>
+            </div>
           </div>
         </div>
       </div>

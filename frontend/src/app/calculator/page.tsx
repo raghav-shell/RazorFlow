@@ -10,8 +10,11 @@ import {
   Info,
   Sparkles,
   CheckCircle2,
+  DollarSign,
+  Zap,
 } from "lucide-react";
 import { formatINR } from "@/lib/utils";
+import { soundFX } from "@/lib/audio/soundFX";
 
 export default function ROICalculatorPage() {
   const presets = [
@@ -27,6 +30,7 @@ export default function ROICalculatorPage() {
   const [monthlySaaSCost, setMonthlySaaSCost] = useState(49000);
 
   function applyPreset(p: typeof presets[0]) {
+    soundFX.playSoftPop();
     setMonthlyGMV(p.gmv);
     setFailureRatePct(p.failureRate);
     setAovRupees(p.aov);
@@ -139,17 +143,17 @@ export default function ROICalculatorPage() {
                 type="range"
                 min="500"
                 max="25000"
-                step="500"
+                step="100"
                 value={aovRupees}
                 onChange={(e) => setAovRupees(Number(e.target.value))}
                 className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#bf5af2]"
               />
             </div>
 
-            {/* Projected Recovery Rate */}
+            {/* Autonomous Recovery Yield Slider */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#86868b]">Projected Recovery Rate</span>
+                <span className="text-[#86868b]">Autonomous Recovery Yield</span>
                 <span className="font-semibold text-[#30d158] font-mono text-sm">
                   {recoveryRatePct}%
                 </span>
@@ -157,7 +161,7 @@ export default function ROICalculatorPage() {
               <input
                 type="range"
                 min="10"
-                max="75"
+                max="80"
                 step="0.5"
                 value={recoveryRatePct}
                 onChange={(e) => setRecoveryRatePct(Number(e.target.value))}
@@ -165,90 +169,97 @@ export default function ROICalculatorPage() {
               />
             </div>
           </div>
-
-          {/* Methodology Info */}
-          <div className="apple-card p-5 text-xs text-[#86868b] space-y-1.5">
-            <div className="flex items-center gap-1.5 text-white font-medium">
-              <Info className="w-3.5 h-3.5 text-[#0071e3]" />
-              <span>Calculation Logic</span>
-            </div>
-            <p className="text-[11px] leading-relaxed">
-              Deterministic integer paise math: Gross ERV = ⌊P_ML × Amount⌋. Net recovery subtracts SaaS licensing and link dispatch fees.
-            </p>
-          </div>
         </div>
 
-        {/* Right Column: Hero ROI Tile & Breakdown */}
+        {/* Right Column: Key Outputs & Dynamic Yield Curve */}
         <div className="lg:col-span-6 space-y-6">
-          {/* Primary ROI Hero Box */}
-          <div className="apple-card p-7 space-y-4 relative overflow-hidden group">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#30d158]">
-              Estimated Monthly Net Revenue Uplift
-            </span>
-            <div className="text-4xl sm:text-5xl font-semibold text-white tracking-tight font-mono">
-              {formatINR(netMonthlyRecoveredPaise)}
-            </div>
-            <p className="text-xs text-[#86868b] leading-relaxed max-w-md">
-              Bottom-line profit rescued from dropped payments with zero merchant chasing.
-            </p>
-
-            <div className="grid grid-cols-2 gap-5 pt-6 border-t border-white/[0.06]">
-              <div>
-                <span className="text-[10px] text-[#86868b] uppercase tracking-wider">
-                  Annualized Gain
-                </span>
-                <div className="text-lg font-semibold text-white font-mono mt-0.5">
-                  {formatINR(annualizedNetBenefitPaise)}
-                </div>
-              </div>
-              <div>
-                <span className="text-[10px] text-[#86868b] uppercase tracking-wider">
-                  ROI Multiplier
-                </span>
-                <div className="text-lg font-semibold text-[#30d158] font-mono mt-0.5 flex items-baseline gap-1">
-                  <span>{roiMultiple}x</span>
-                  <span className="text-xs text-[#86868b] font-normal">Return</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Breakdown Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="apple-card p-5 space-y-1">
-              <span className="text-[10px] text-[#86868b] uppercase tracking-wider">GMV at Risk</span>
-              <div className="text-base font-semibold text-[#ff453a] font-mono">
-                {formatINR(failedGMVPaise)}
-              </div>
-              <span className="text-[10px] text-[#86868b] block font-mono">
-                {totalFailedTransactions.toLocaleString("en-IN")} dropped orders/mo
+          {/* Main Net Yield Banner */}
+          <div className="apple-card p-7 space-y-5 relative overflow-hidden">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-semibold text-[#86868b] uppercase tracking-wider">
+                Net Rescued Revenue
+              </span>
+              <span className="px-3 py-1 rounded-full bg-[#30d158]/10 text-[#30d158] text-xs font-mono font-semibold">
+                {roiMultiple}x ROI
               </span>
             </div>
 
-            <div className="apple-card p-5 space-y-1">
-              <span className="text-[10px] text-[#86868b] uppercase tracking-wider">Gross Recovered</span>
-              <div className="text-base font-semibold text-[#30d158] font-mono">
-                {formatINR(estimatedRecoveredPaise)}
+            <div>
+              <div className="text-4xl sm:text-5xl font-semibold text-white tracking-tight font-mono">
+                {formatINR(netMonthlyRecoveredPaise)}
+                <span className="text-sm font-normal text-[#86868b]"> / month</span>
               </div>
-              <span className="text-[10px] text-[#86868b] block font-mono">
-                {(totalFailedTransactions * (recoveryRatePct / 100)).toFixed(0)} rescued
-              </span>
+              <p className="text-xs text-[#86868b] mt-1 font-mono">
+                Annualized Bottom-Line Expansion: {formatINR(annualizedNetBenefitPaise)}
+              </p>
             </div>
 
-            <div className="apple-card p-5 space-y-1">
-              <span className="text-[10px] text-[#86868b] uppercase tracking-wider">Dispatch Cost</span>
-              <div className="text-base font-semibold text-white font-mono">
-                {formatINR(totalInterventionCostPaise)}
+            {/* Dynamic SVG Recovery Yield Curve */}
+            <div className="pt-4 border-t border-white/[0.06] space-y-2">
+              <div className="flex justify-between text-[11px] text-[#86868b]">
+                <span>Loss Trajectory vs. Rescued Yield</span>
+                <span className="text-[#30d158] font-mono font-semibold">+{recoveryRatePct}% Delta</span>
               </div>
-              <span className="text-[10px] text-[#86868b] block">₹2.30 per attempt</span>
+              
+              <div className="h-24 w-full relative">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 400 100" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="yieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#30d158" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#30d158" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Baseline Lost Revenue Curve */}
+                  <path
+                    d="M 0,80 Q 200,70 400,60"
+                    fill="none"
+                    stroke="#ff453a"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                    opacity="0.6"
+                  />
+
+                  {/* Rescued Revenue Curve Area */}
+                  <path
+                    d={`M 0,80 Q 200,${80 - recoveryRatePct * 0.8} 400,${80 - recoveryRatePct * 1.1} L 400,100 L 0,100 Z`}
+                    fill="url(#yieldGrad)"
+                  />
+
+                  {/* Rescued Revenue Stroke */}
+                  <path
+                    d={`M 0,80 Q 200,${80 - recoveryRatePct * 0.8} 400,${80 - recoveryRatePct * 1.1}`}
+                    fill="none"
+                    stroke="#30d158"
+                    strokeWidth="2.5"
+                  />
+
+                  {/* Terminal Dot */}
+                  <circle
+                    cx="400"
+                    cy={80 - recoveryRatePct * 1.1}
+                    r="4"
+                    fill="#30d158"
+                    className="animate-pulse"
+                  />
+                </svg>
+              </div>
             </div>
 
-            <div className="apple-card p-5 space-y-1">
-              <span className="text-[10px] text-[#86868b] uppercase tracking-wider">Total Spend</span>
-              <div className="text-base font-semibold text-white font-mono">
-                {formatINR(totalMonthlyCostPaise)}
+            {/* Financial Breakdown Grid */}
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/[0.06] text-xs">
+              <div>
+                <span className="text-[10px] text-[#86868b] uppercase">Gross Rescued</span>
+                <div className="text-base font-semibold text-white font-mono mt-0.5">
+                  {formatINR(estimatedRecoveredPaise)}
+                </div>
               </div>
-              <span className="text-[10px] text-[#86868b] block">Platform + links</span>
+              <div>
+                <span className="text-[10px] text-[#86868b] uppercase">Platform Cost</span>
+                <div className="text-base font-semibold text-[#86868b] font-mono mt-0.5">
+                  {formatINR(totalMonthlyCostPaise)}
+                </div>
+              </div>
             </div>
           </div>
         </div>

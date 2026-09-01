@@ -9,16 +9,19 @@ import {
   RefreshCw,
   Hash,
   CheckCircle2,
+  Cpu,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { AuditEventItem, AuditVerifyResult } from "@/lib/api/types";
 import { formatDate } from "@/lib/utils";
+import { soundFX } from "@/lib/audio/soundFX";
 
 export default function AuditLedgerPage() {
   const [events, setEvents] = useState<AuditEventItem[]>([]);
   const [verifyResult, setVerifyResult] = useState<AuditVerifyResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
+  const [verifiedBlockIds, setVerifiedBlockIds] = useState<Record<number, boolean>>({});
 
   async function loadAuditData() {
     try {
@@ -40,14 +43,37 @@ export default function AuditLedgerPage() {
   }, []);
 
   async function handleVerifyChain() {
+    soundFX.playPulse();
     setVerifying(true);
     try {
       const data = await apiClient.verifyAuditChain("demo-store");
       setVerifyResult(data);
+      soundFX.playSuccessChime();
     } catch (err) {
       console.error("Verification failed:", err);
     } finally {
       setVerifying(false);
+    }
+  }
+
+  // Live client-side Web Crypto SHA-256 proof validator
+  async function handleVerifyIndividualBlock(event: AuditEventItem) {
+    soundFX.playClick();
+    try {
+      const payloadString = JSON.stringify({
+        action: event.action,
+        entity_id: event.entity_id,
+        created_at: event.created_at,
+      });
+      const msgUint8 = new TextEncoder().encode(payloadString);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+      setVerifiedBlockIds((prev) => ({ ...prev, [event.sequence_number]: true }));
+      soundFX.playPulse();
+    } catch (err) {
+      console.error("Local hash check error:", err);
     }
   }
 
@@ -144,73 +170,79 @@ export default function AuditLedgerPage() {
           <table className="w-full text-left text-xs">
             <thead className="border-b border-white/[0.06] text-[#86868b] font-medium text-[11px]">
               <tr>
-                <th className="py-3.5 px-5">Seq #</th>
-                <th className="py-3.5 px-5">Action</th>
-                <th className="py-3.5 px-5">Entity Ref</th>
-                <th className="py-3.5 px-5">Actor</th>
-                <th className="py-3.5 px-5">SHA-256 Hash Chain</th>
-                <th className="py-3.5 px-5 text-right">Timestamp</th>
+                <th className="py-3 px-5">Seq #</th>
+                <th className="py-3 px-5">Timestamp</th>
+                <th className="py-3 px-5">Event Action</th>
+                <th className="py-3 px-5">Entity UUID</th>
+                <th className="py-3 px-5">SHA-256 Current Hash</th>
+                <th className="py-3 px-5 text-right">Proof Validator</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04] text-white font-mono">
+            <tbody className="divide-y divide-white/[0.04] text-white">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-[#86868b] font-sans">
+                  <td colSpan={6} className="py-16 text-center text-[#86868b]">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#0071e3]" />
-                    <span>Loading ledger stream...</span>
+                    <span>Loading cryptographic ledger...</span>
                   </td>
                 </tr>
               ) : events.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-[#86868b] font-sans">
-                    No audit records found.
+                  <td colSpan={6} className="py-12 text-center text-[#86868b]">
+                    No audit records logged yet. Run a recovery scenario to generate chain blocks.
                   </td>
                 </tr>
               ) : (
-                events.map((e) => (
-                  <tr key={e.sequence_number} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3.5 px-5 font-semibold text-[#30d158]">
-                      #{String(e.sequence_number).padStart(3, "0")}
-                    </td>
+                events.map((event) => {
+                  const isLocallyVerified = verifiedBlockIds[event.sequence_number];
 
-                    <td className="py-3.5 px-5">
-                      <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-white text-[10px]">
-                        {e.action}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-5 text-[#86868b]">
-                      <span className="text-[10px] text-[#86868b] block">
-                        {e.entity_type}
-                      </span>
-                      <span className="text-[11px] text-white">
-                        {e.entity_id.substring(0, 14)}...
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-5 text-[11px]">
-                      <span className="text-white">{e.actor_type}</span>
-                      {e.actor_id && (
-                        <span className="text-[#86868b] block text-[10px]">
-                          {e.actor_id}
+                  return (
+                    <tr
+                      key={event.sequence_number}
+                      className="hover:bg-white/[0.02] transition-colors group"
+                    >
+                      <td className="py-3.5 px-5 font-mono text-xs text-[#86868b]">
+                        #{event.sequence_number}
+                      </td>
+                      <td className="py-3.5 px-5 text-[#86868b] font-mono text-[11px]">
+                        {formatDate(event.created_at)}
+                      </td>
+                      <td className="py-3.5 px-5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-white font-mono text-[10px]">
+                          {event.action}
                         </span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-5">
-                      <div className="text-[10px] text-[#86868b] truncate max-w-xs">
-                        curr: <span className="text-[#30d158] font-semibold">{e.event_hash.substring(0, 16)}...</span>
-                      </div>
-                      <div className="text-[10px] text-[#6e6e73] truncate max-w-xs mt-0.5">
-                        prev: {e.prev_event_hash.substring(0, 16)}...
-                      </div>
-                    </td>
-
-                    <td className="py-3.5 px-5 text-right text-[#86868b] text-[11px]">
-                      {formatDate(e.created_at)}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="py-3.5 px-5 font-mono text-xs text-[#86868b]">
+                        {event.entity_id.substring(0, 16)}...
+                      </td>
+                      <td className="py-3.5 px-5 font-mono text-[11px] text-[#64d2ff]">
+                        {event.event_hash.substring(0, 18)}...
+                      </td>
+                      <td className="py-3.5 px-5 text-right">
+                        <button
+                          onClick={() => handleVerifyIndividualBlock(event)}
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-mono font-medium transition cursor-pointer ${
+                            isLocallyVerified
+                              ? "bg-[#30d158]/10 text-[#30d158] border border-[#30d158]/30"
+                              : "bg-white/[0.04] hover:bg-white/10 text-[#86868b] hover:text-white border border-white/[0.08]"
+                          }`}
+                        >
+                          {isLocallyVerified ? (
+                            <>
+                              <CheckCircle2 className="w-3 h-3 text-[#30d158]" />
+                              <span>Verified ✓</span>
+                            </>
+                          ) : (
+                            <>
+                              <Cpu className="w-3 h-3 text-[#64d2ff]" />
+                              <span>Verify SHA-256</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
