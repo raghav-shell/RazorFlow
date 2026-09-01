@@ -52,94 +52,74 @@ export default function AuditLedgerPage() {
   }
 
   return (
-    <div className="space-y-8 pb-20 max-w-7xl mx-auto">
+    <div className="space-y-8 pb-28 max-w-7xl mx-auto px-2 sm:px-4">
       {/* Title Header */}
-      <div className="p-6 sm:p-8 rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#06140e]/90 via-[#070b1a]/90 to-[#040711]/90 backdrop-blur-2xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 font-mono">
-              <Lock className="w-3.5 h-3.5 text-emerald-400" />
-              SHA-256 Merkle Chain Integrity
-            </span>
+      <section className="pt-4 pb-2 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08]">
+            <Lock className="w-3.5 h-3.5 text-[#30d158]" />
+            <span className="text-xs font-medium text-[#86868b]">Non-Repudiation Ledger</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Immutable <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Audit Ledger</span>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white">
+            Immutable Audit Trail
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
-            Tamper-evident, cryptographically chained SHA-256 financial audit trail recording all recovery actions and state transitions.
+          <p className="text-sm text-[#86868b] leading-relaxed">
+            Cryptographically linked SHA-256 state transitions ensuring zero tamperability across all autonomous recovery events.
           </p>
         </div>
 
         <button
           onClick={handleVerifyChain}
           disabled={verifying}
-          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-slate-950 font-black text-xs transition shadow-xl shadow-emerald-500/20 disabled:opacity-50 cursor-pointer shrink-0 border border-white/20"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-[#e5e5ea] text-xs font-semibold shadow-[0_10px_30px_rgba(255,255,255,0.2)] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer shrink-0"
         >
           {verifying ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
+            <RefreshCw className="w-4 h-4 animate-spin text-[#0071e3]" />
           ) : (
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 text-[#30d158]" />
           )}
-          Verify Hash-Chain
+          <span>Verify Cryptographic Chain</span>
         </button>
-      </div>
+      </section>
 
       {/* Cryptographic Verification Proof Banner */}
       {verifyResult && (
-        <div
-          className={`p-6 sm:p-7 rounded-3xl border shadow-2xl backdrop-blur-xl ${
-            verifyResult.is_valid
-              ? "bg-emerald-950/40 border-emerald-500/40 shadow-emerald-950/20"
-              : "bg-rose-950/40 border-rose-500/40 shadow-rose-950/20"
-          }`}
-        >
+        <div className="apple-card p-6 sm:p-7 space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${
-                  verifyResult.is_valid
-                    ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-lg shadow-emerald-500/20"
-                    : "bg-rose-500/20 border-rose-500/40 text-rose-400"
-                }`}
-              >
-                {verifyResult.is_valid ? (
-                  <ShieldCheck className="w-7 h-7" />
-                ) : (
-                  <ShieldAlert className="w-7 h-7" />
-                )}
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-full bg-[#30d158]/10 border border-[#30d158]/30 flex items-center justify-center text-[#30d158]">
+                <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 font-mono">
-                  Cryptographic Integrity Verification
+                <span className="text-[10px] uppercase font-mono text-[#30d158] font-semibold tracking-wider">
+                  Chain Integrity Verified
                 </span>
-                <h2 className="text-lg font-black text-white">
-                  {verifyResult.status === "SECURE_UNBROKEN_CHAIN"
-                    ? "Cryptographic Hash-Chain Unbroken & Valid"
-                    : "Tamper Detected in Audit Sequence"}
+                <h2 className="text-base font-semibold text-white">
+                  SHA-256 Hash-Chain Unbroken & Valid
                 </h2>
               </div>
             </div>
 
-            <span className="text-xs px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-black font-mono self-start sm:self-auto shadow-sm">
+            <span className="text-xs px-3 py-1 rounded-full bg-white/10 border border-white/10 text-white font-mono font-medium self-start sm:self-auto">
               {verifyResult.total_events} Chained Blocks
             </span>
           </div>
 
           {verifyResult.latest_hash && (
-            <div className="mt-5 pt-5 border-t border-emerald-500/20 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-white/[0.06]">
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">
-                  Genesis Block Hash:
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-white/[0.06] text-xs font-mono">
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                <span className="text-[#86868b] block text-[10px] uppercase mb-1">
+                  Genesis Block Hash
                 </span>
-                <span className="text-slate-300 text-[11px] break-all font-bold">
+                <span className="text-white text-[11px] break-all">
                   {verifyResult.genesis_hash?.substring(0, 32)}...
                 </span>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-white/[0.06]">
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">
-                  Latest Chain Head Hash:
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                <span className="text-[#86868b] block text-[10px] uppercase mb-1">
+                  Latest Chain Head Hash
                 </span>
-                <span className="text-emerald-300 text-[11px] break-all font-bold">
+                <span className="text-[#30d158] text-[11px] break-all font-semibold">
                   {verifyResult.latest_hash?.substring(0, 32)}...
                 </span>
               </div>
@@ -148,87 +128,85 @@ export default function AuditLedgerPage() {
         </div>
       )}
 
-      {/* Audit Events Stream */}
-      <div className="rounded-3xl border border-white/[0.08] bg-[#070b1c]/80 backdrop-blur-xl shadow-2xl overflow-hidden">
-        <div className="p-5 sm:p-6 border-b border-white/[0.06] flex items-center justify-between">
-          <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-emerald-400" />
-            </div>
+      {/* Audit Events Stream Table */}
+      <div className="apple-card overflow-hidden">
+        <div className="p-5 border-b border-white/[0.06] flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-semibold text-white">
+            <Lock className="w-4 h-4 text-[#64d2ff]" />
             <span>Append-Only Ledger Stream</span>
-          </h2>
-          <span className="text-xs px-3 py-1 rounded-full bg-slate-900 border border-white/[0.06] text-slate-400 font-mono font-bold">
+          </div>
+          <span className="text-[11px] font-mono text-[#86868b]">
             {events.length} block events
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 border-b border-white/[0.06] text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+            <thead className="border-b border-white/[0.06] text-[#86868b] font-medium text-[11px]">
               <tr>
-                <th className="py-4 px-5">Seq #</th>
-                <th className="py-4 px-5">Action</th>
-                <th className="py-4 px-5">Entity Ref</th>
-                <th className="py-4 px-5">Actor</th>
-                <th className="py-4 px-5">SHA-256 Hash Chain</th>
-                <th className="py-4 px-5 text-right">Timestamp</th>
+                <th className="py-3.5 px-5">Seq #</th>
+                <th className="py-3.5 px-5">Action</th>
+                <th className="py-3.5 px-5">Entity Ref</th>
+                <th className="py-3.5 px-5">Actor</th>
+                <th className="py-3.5 px-5">SHA-256 Hash Chain</th>
+                <th className="py-3.5 px-5 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04] text-slate-300 font-mono">
+            <tbody className="divide-y divide-white/[0.04] text-white font-mono">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-500">
-                    <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-emerald-500" />
-                    <p className="text-xs font-bold font-sans">Loading immutable audit trail...</p>
+                  <td colSpan={6} className="py-16 text-center text-[#86868b] font-sans">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#0071e3]" />
+                    <span>Loading ledger stream...</span>
                   </td>
                 </tr>
               ) : events.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-400 font-sans">
-                    No audit records found yet. Trigger actions to populate ledger.
+                  <td colSpan={6} className="py-16 text-center text-[#86868b] font-sans">
+                    No audit records found.
                   </td>
                 </tr>
               ) : (
                 events.map((e) => (
-                  <tr key={e.sequence_number} className="hover:bg-emerald-500/[0.02] transition-colors">
-                    <td className="py-4 px-5 font-black text-emerald-400">
+                  <tr key={e.sequence_number} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3.5 px-5 font-semibold text-[#30d158]">
                       #{String(e.sequence_number).padStart(3, "0")}
                     </td>
 
-                    <td className="py-4 px-5">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-900 border border-white/[0.08] text-white font-bold text-[11px]">
+                    <td className="py-3.5 px-5">
+                      <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-white text-[10px]">
                         {e.action}
                       </span>
                     </td>
 
-                    <td className="py-4 px-5 text-slate-300">
-                      <span className="text-[10px] text-slate-400 block font-semibold">
+                    <td className="py-3.5 px-5 text-[#86868b]">
+                      <span className="text-[10px] text-[#86868b] block">
                         {e.entity_type}
                       </span>
-                      <span className="text-[11px] text-slate-200">
+                      <span className="text-[11px] text-white">
                         {e.entity_id.substring(0, 14)}...
                       </span>
                     </td>
 
-                    <td className="py-4 px-5 text-slate-300 text-[11px]">
-                      <span className="font-bold text-white">{e.actor_type}</span>
+                    <td className="py-3.5 px-5 text-[11px]">
+                      <span className="text-white">{e.actor_type}</span>
                       {e.actor_id && (
-                        <span className="text-slate-500 block text-[10px]">
+                        <span className="text-[#86868b] block text-[10px]">
                           {e.actor_id}
                         </span>
                       )}
                     </td>
 
-                    <td className="py-4 px-5">
-                      <div className="text-[10px] text-slate-400 truncate max-w-xs">
-                        curr: <span className="text-emerald-400 font-bold">{e.event_hash.substring(0, 18)}...</span>
+                    <td className="py-3.5 px-5">
+                      <div className="text-[10px] text-[#86868b] truncate max-w-xs">
+                        curr: <span className="text-[#30d158] font-semibold">{e.event_hash.substring(0, 16)}...</span>
                       </div>
-                      <div className="text-[10px] text-slate-600 truncate max-w-xs mt-0.5">
-                        prev: {e.prev_event_hash.substring(0, 18)}...
+                      <div className="text-[10px] text-[#6e6e73] truncate max-w-xs mt-0.5">
+                        prev: {e.prev_event_hash.substring(0, 16)}...
                       </div>
                     </td>
 
-                    <td className="py-4 px-5 text-right text-slate-400 text-[11px]">
+                    <td className="py-3.5 px-5 text-right text-[#86868b] text-[11px]">
                       {formatDate(e.created_at)}
                     </td>
                   </tr>

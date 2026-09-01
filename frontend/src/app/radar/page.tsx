@@ -4,15 +4,9 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Radio,
-  AlertTriangle,
-  Activity,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  Zap,
-  Info,
   RefreshCw,
-  TrendingDown,
+  Info,
+  ShieldCheck,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { MetricSummary } from "@/lib/api/types";
@@ -41,54 +35,52 @@ export default function FailureRadarPage() {
   }, []);
 
   return (
-    <div className="space-y-8 pb-20 max-w-7xl mx-auto">
+    <div className="space-y-8 pb-28 max-w-7xl mx-auto px-2 sm:px-4">
       {/* Header Cockpit */}
-      <div className="p-6 sm:p-8 rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#120e06]/90 via-[#070b1a]/90 to-[#040711]/90 backdrop-blur-2xl shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 font-mono">
-              <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              Live Telemetry Stream
-            </span>
+      <section className="pt-4 pb-2 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08]">
+            <Radio className="w-3.5 h-3.5 text-[#ffd60a]" />
+            <span className="text-xs font-medium text-[#86868b]">Root-Cause Diagnostics</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Observed Failure <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Concentration Radar</span>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-white">
+            Observed Failure Radar
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
-            Real-time aggregate diagnostics and recovery efficiency across failure categories derived from ingested merchant webhooks.
+          <p className="text-sm text-[#86868b] leading-relaxed">
+            Real-time aggregate diagnostics and statistical recovery efficiency across all failure categories.
           </p>
         </div>
 
         <button
           onClick={loadData}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-white/[0.08] hover:border-amber-500/40 hover:bg-slate-800 text-slate-200 text-xs font-bold transition cursor-pointer shadow-lg shadow-black/40 shrink-0"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition cursor-pointer shrink-0"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-amber-400" : ""}`} />
-          Refresh Radar
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#64d2ff]" : ""}`} />
+          <span>Refresh Radar</span>
         </button>
-      </div>
+      </section>
 
       {/* Telemetry Notice */}
-      <div className="p-4 rounded-2xl bg-slate-950/60 border border-white/[0.06] text-xs text-slate-400 flex items-start gap-3">
-        <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+      <div className="apple-card p-4 text-xs text-[#86868b] flex items-start gap-3">
+        <Info className="w-4 h-4 text-[#0071e3] shrink-0 mt-0.5" />
         <span className="leading-relaxed">
-          <strong>Telemetry Transparency Notice:</strong> All metrics represent <em>observed failure concentrations</em> from processed merchant webhook events in RazorFlow. RazorFlow does not claim unverified external banking telemetry.
+          <strong className="text-white">Telemetry Transparency:</strong> All metrics represent observed failure concentrations from processed merchant webhook events in RazorFlow.
         </span>
       </div>
 
       {/* Category Breakdown Cards */}
       {loading ? (
-        <div className="py-20 text-center text-slate-500">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-amber-500" />
-          <p className="text-xs font-bold">Ingesting telemetry data points...</p>
+        <div className="py-20 text-center text-[#86868b]">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-[#0071e3]" />
+          <p className="text-xs">Ingesting telemetry data points...</p>
         </div>
       ) : !metrics?.category_breakdown ? (
-        <div className="py-16 text-center text-slate-400">
+        <div className="py-16 text-center text-[#86868b]">
           No failure concentration data recorded yet.
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {Object.entries(metrics.category_breakdown).map(([categoryKey, catData]) => {
               const recoveryRate = catData.recovery_rate_pct || 0;
               const isTransient =
@@ -98,16 +90,16 @@ export default function FailureRadarPage() {
               return (
                 <div
                   key={categoryKey}
-                  className="p-6 rounded-3xl border border-white/[0.08] bg-[#070b1c]/80 backdrop-blur-xl shadow-2xl space-y-5 hover:border-amber-500/30 transition-all duration-300"
+                  className="apple-card p-6 space-y-5 apple-card-hover"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <CategoryBadge category={categoryKey as any} />
-                      <span className="block text-[10px] text-slate-400 mt-2 font-mono font-medium">
+                      <span className="block text-[10px] text-[#86868b] mt-2 font-mono">
                         {isTransient ? "⚡ Transient (Auto-Retryable)" : "🛡️ Non-Transient"}
                       </span>
                     </div>
-                    <span className="text-xs font-mono font-black text-white px-2.5 py-1 rounded-lg bg-slate-900 border border-white/[0.06]">
+                    <span className="text-xs font-mono text-white px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.04]">
                       {catData.total_cases} cases
                     </span>
                   </div>
@@ -115,14 +107,14 @@ export default function FailureRadarPage() {
                   {/* Recovery Rate Bar */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-400 font-bold">Observed Recovery Yield</span>
-                      <span className="font-black text-emerald-400 font-mono">
+                      <span className="text-[#86868b]">Recovery Yield</span>
+                      <span className="font-semibold text-[#30d158] font-mono">
                         {formatPercent(recoveryRate)}
                       </span>
                     </div>
-                    <div className="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-white/[0.06]">
+                    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                        className="h-full bg-[#30d158] rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(100, Math.max(0, recoveryRate))}%` }}
                       />
                     </div>
@@ -131,18 +123,14 @@ export default function FailureRadarPage() {
                   {/* Financial Stats */}
                   <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white/[0.06] text-xs">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                        At Risk
-                      </span>
-                      <div className="font-mono font-black text-rose-400 text-sm mt-1">
+                      <span className="text-[10px] text-[#86868b] uppercase">At Risk</span>
+                      <div className="font-mono font-semibold text-[#ff453a] text-sm mt-0.5">
                         {formatINR(catData.amount_at_risk_cents)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                        Recovered
-                      </span>
-                      <div className="font-mono font-black text-emerald-400 text-sm mt-1">
+                      <span className="text-[10px] text-[#86868b] uppercase">Recovered</span>
+                      <div className="font-mono font-semibold text-[#30d158] text-sm mt-0.5">
                         {formatINR(catData.amount_recovered_cents)}
                       </div>
                     </div>
@@ -154,11 +142,9 @@ export default function FailureRadarPage() {
 
           {/* Action Effectiveness Summary */}
           {metrics.action_breakdown && (
-            <div className="p-6 sm:p-8 rounded-3xl border border-white/[0.08] bg-[#070b1c]/80 backdrop-blur-xl shadow-2xl space-y-5">
-              <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2.5 pb-2 border-b border-white/[0.06]">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
-                  <ShieldCheck className="w-4 h-4 text-blue-400" />
-                </div>
+            <div className="apple-card p-6 sm:p-7 space-y-5">
+              <h2 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-white/[0.06]">
+                <ShieldCheck className="w-4 h-4 text-[#0071e3]" />
                 <span>Intervention Strategy Effectiveness</span>
               </h2>
 
@@ -166,24 +152,24 @@ export default function FailureRadarPage() {
                 {Object.entries(metrics.action_breakdown).map(([actionKey, actData]) => (
                   <div
                     key={actionKey}
-                    className="p-5 rounded-2xl border border-white/[0.06] bg-slate-950/60 space-y-3"
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-2.5"
                   >
-                    <div className="font-bold text-white font-mono text-xs">
+                    <div className="font-semibold text-white font-mono text-xs">
                       {actionKey.replace(/_/g, " ")}
                     </div>
-                    <div className="flex justify-between text-slate-400">
-                      <span>Total Executed</span>
-                      <span className="font-mono text-white font-bold">{actData.total_attempts}</span>
+                    <div className="flex justify-between text-[#86868b]">
+                      <span>Attempts</span>
+                      <span className="font-mono text-white font-medium">{actData.total_attempts}</span>
                     </div>
-                    <div className="flex justify-between text-slate-400">
+                    <div className="flex justify-between text-[#86868b]">
                       <span>Success Rate</span>
-                      <span className="font-mono text-emerald-400 font-bold">
+                      <span className="font-mono text-[#30d158] font-semibold">
                         {formatPercent(actData.success_rate_pct)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-slate-400 pt-2 border-t border-white/[0.06] text-[10px]">
+                    <div className="flex justify-between text-[#86868b] pt-2 border-t border-white/[0.04] text-[10px]">
                       <span>Intervention Cost</span>
-                      <span className="font-mono text-slate-300 font-semibold">{formatINR(actData.total_cost_cents)}</span>
+                      <span className="font-mono text-white">{formatINR(actData.total_cost_cents)}</span>
                     </div>
                   </div>
                 ))}
