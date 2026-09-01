@@ -14,8 +14,7 @@ import {
   Loader2,
   RefreshCw,
   ExternalLink,
-  ShieldCheck,
-  Zap,
+  ChevronRight,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { DemoScenarioResult } from "@/lib/api/types";
@@ -39,54 +38,66 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
     {
       id: "scenario_1",
       title: "Scenario 1: Autonomous Payment Link Recovery",
+      subtitle: "Transient dropoff recovered via authentic Razorpay test checkout link",
       tag: "Happy Path",
-      tagColor: "bg-emerald-950/60 text-emerald-300 border-emerald-500/40",
+      tagColor: "bg-[#30d158]/10 text-[#30d158] border-[#30d158]/30",
       icon: CheckCircle2,
-      iconColor: "text-emerald-400",
-      input: "UPI Auth dropoff on ₹4,500 order (High-confidence customer)",
-      decision: "ML P_ML = 0.78 • Gemini recommends PAYMENT_LINK",
-      policy: "Policy authorizes link generation (Within risk & attempt ceiling)",
-      execution: "Authentic Razorpay Test payment link created & dispatched",
-      outcome: "Payment verified via webhook • ₹4,500 recovered • Chained to Audit",
+      iconColor: "text-[#30d158]",
+      steps: [
+        { label: "1. Trigger", text: "UPI Auth dropoff on ₹4,500 order" },
+        { label: "2. AI & ML", text: "P_ML = 0.78 • Gemini recommends PAYMENT_LINK" },
+        { label: "3. Policy", text: "Approved: Within attempt ceiling & risk limits" },
+        { label: "4. Execution", text: "Authentic Razorpay test link created & sent" },
+        { label: "5. Outcome", text: "₹4,500 recovered • SHA-256 chained to audit" },
+      ],
     },
     {
       id: "scenario_2",
       title: "Scenario 2: Transient Bank Outage Cooldown",
+      subtitle: "Bank 503 error handled with automated cooldown to prevent customer spam",
       tag: "Outage Protection",
-      tagColor: "bg-amber-950/60 text-amber-300 border-amber-500/40",
+      tagColor: "bg-[#ffd60a]/10 text-[#ffd60a] border-[#ffd60a]/30",
       icon: AlertTriangle,
-      iconColor: "text-amber-400",
-      input: "HDFC Bank UPI 503 Service Unavailable timeout on ₹2,800 order",
-      decision: "ML detects transient outage pattern • Favors WAIT_AND_REASSESS",
-      policy: "Policy enforces 30-min cooldown window to prevent customer spam",
-      execution: "Case placed in WAITING_EXTERNAL • Scheduled Celery reassessment",
-      outcome: "Zero spam messages sent during active bank outage",
+      iconColor: "text-[#ffd60a]",
+      steps: [
+        { label: "1. Trigger", text: "HDFC Bank UPI 503 Service Unavailable (₹2,800)" },
+        { label: "2. AI & ML", text: "ML classifies transient outage • Recommends WAIT" },
+        { label: "3. Policy", text: "Enforces 30-min cooldown to avoid spamming user" },
+        { label: "4. Execution", text: "Case scheduled in WAITING_EXTERNAL queue" },
+        { label: "5. Outcome", text: "Zero spam messages during active bank outage" },
+      ],
     },
     {
       id: "scenario_3",
       title: "Scenario 3: High-Value Policy Override",
+      subtitle: "High-value enterprise order strictly overridden by deterministic merchant guardrails",
       tag: "Policy Authority",
-      tagColor: "bg-purple-950/60 text-purple-300 border-purple-500/40",
+      tagColor: "bg-[#bf5af2]/10 text-[#bf5af2] border-[#bf5af2]/30",
       icon: ShieldAlert,
-      iconColor: "text-purple-400",
-      input: "₹85,000 corporate payment fails (Exceeds ₹50,000 threshold)",
-      decision: "Gemini recommends automated PAYMENT_LINK (Advisory only)",
-      policy: "Policy Engine OVERRIDES: RULE_HIGH_VALUE_ESCALATION triggered",
-      execution: "Dispatches HUMAN_ESCALATION for account manager review",
-      outcome: "AI strictly bounded by deterministic merchant financial governance",
+      iconColor: "text-[#bf5af2]",
+      steps: [
+        { label: "1. Trigger", text: "₹85,000 corporate payment dropoff (> ₹50k limit)" },
+        { label: "2. AI Advisory", text: "Gemini suggests automated link (Advisory)" },
+        { label: "3. Policy Override", text: "Policy Engine OVERRIDES: High-Value Rule triggered" },
+        { label: "4. Execution", text: "Dispatches HUMAN_ESCALATION to key account manager" },
+        { label: "5. Outcome", text: "AI strictly bounded by financial governance" },
+      ],
     },
     {
       id: "scenario_4",
       title: "Scenario 4: AI Failure Fallback to Deterministic ERV",
+      subtitle: "Zero pipeline downtime fallback when external LLM API is unavailable",
       tag: "Fault Tolerance",
-      tagColor: "bg-cyan-950/60 text-cyan-300 border-cyan-500/40",
+      tagColor: "bg-[#64d2ff]/10 text-[#64d2ff] border-[#64d2ff]/30",
       icon: Cpu,
-      iconColor: "text-cyan-400",
-      input: "Simulated Gemini AI timeout / API partition (8.0s limit)",
-      decision: "Pipeline transparently falls back to Deterministic ERV Ranker",
-      policy: "Policy authorizes top candidate without business stall",
-      execution: "Execution proceeds seamlessly • is_fallback=true logged",
-      outcome: "100% financial pipeline uptime even during AI provider outages",
+      iconColor: "text-[#64d2ff]",
+      steps: [
+        { label: "1. Trigger", text: "Simulated Gemini API timeout / partition (8.0s)" },
+        { label: "2. Fallback", text: "Fallback to Deterministic ERV Mathematical Ranker" },
+        { label: "3. Policy", text: "Policy authorizes highest ERV candidate seamlessly" },
+        { label: "4. Execution", text: "Execution proceeds without stall (is_fallback=true)" },
+        { label: "5. Outcome", text: "100% financial pipeline uptime guaranteed" },
+      ],
     },
   ];
 
@@ -126,34 +137,37 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-4xl my-8 rounded-3xl border border-white/[0.1] bg-[#070b1e] shadow-2xl p-6 sm:p-8 overflow-hidden">
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 right-1/4 w-80 h-32 bg-blue-500/15 blur-3xl pointer-events-none" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xl overflow-y-auto">
+      <div className="relative w-full max-w-4xl my-auto rounded-[28px] border border-white/[0.12] bg-[#0c0c10]/95 backdrop-blur-3xl shadow-[0_40px_100px_rgba(0,0,0,0.9)] p-6 sm:p-8 overflow-hidden">
+        
+        {/* Subtle Ambient Top Center Light */}
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#0071e3]/20 blur-[90px] pointer-events-none" />
 
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 transition cursor-pointer"
+          className="absolute top-6 right-6 text-[#86868b] hover:text-white p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.1] border border-white/[0.08] transition cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-white/[0.08]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/[0.08]">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25 shrink-0 border border-white/20">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-11 h-11 rounded-2xl bg-[#0071e3]/15 border border-[#0071e3]/30 flex items-center justify-center text-[#64d2ff] shadow-[0_0_20px_rgba(0,113,227,0.25)] shrink-0">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-white flex items-center gap-2">
-                Evaluator Demo Showcase
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 font-bold uppercase tracking-wider">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-xl font-semibold text-white tracking-tight">
+                  Evaluator Demo Showcase
+                </h2>
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/[0.1] text-[#86868b] font-mono uppercase tracking-wider">
                   3-Min Judge Demo
                 </span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Trigger real backend orchestration pipelines to inspect AI reasoning, deterministic guardrails, and cryptographic reconciliation.
+              </div>
+              <p className="text-xs text-[#86868b] mt-0.5">
+                Execute live backend recovery pipelines to inspect AI reasoning, deterministic guardrails, and cryptographic reconciliation.
               </p>
             </div>
           </div>
@@ -161,57 +175,57 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
           <button
             onClick={handleResetDemoCohort}
             disabled={resetting}
-            className="px-3.5 py-2 rounded-xl bg-slate-900/80 border border-white/[0.08] hover:bg-slate-800 text-slate-300 text-xs font-bold transition shrink-0 flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+            className="px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] text-[#86868b] hover:text-white text-xs font-medium transition shrink-0 flex items-center gap-2 disabled:opacity-50 cursor-pointer self-start sm:self-auto"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-blue-400" : ""}`} />
-            <span>Reset Demo Cohort (22 Cases)</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${resetting ? "animate-spin text-[#0071e3]" : ""}`} />
+            <span>Reset Demo Cohort</span>
           </button>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-5 p-4 rounded-xl bg-rose-950/60 border border-rose-500/40 text-xs text-rose-300 font-medium">
+          <div className="mb-5 p-4 rounded-2xl bg-[#ff453a]/10 border border-[#ff453a]/30 text-xs text-[#ff453a] font-medium">
             {error}
           </div>
         )}
 
         {/* Reset Success Alert */}
         {resetMessage && (
-          <div className="mb-5 p-4 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-300 flex items-center gap-2 font-medium">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="mb-5 p-4 rounded-2xl bg-[#30d158]/10 border border-[#30d158]/30 text-xs text-[#30d158] flex items-center gap-2 font-medium">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{resetMessage}</span>
           </div>
         )}
 
         {/* Scenario Result Card */}
         {result && (
-          <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-blue-950/50 via-[#0a1226]/90 to-[#070b1c]/90 border border-blue-500/40 shadow-xl space-y-4">
+          <div className="mb-6 p-5 rounded-2xl bg-white/[0.03] border border-[#0071e3]/40 shadow-[0_10px_30px_rgba(0,113,227,0.15)] space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-300 uppercase tracking-wider flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-semibold text-white flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#30d158]" />
                 Scenario Executed Successfully
               </span>
-              <span className="text-xs px-3 py-1 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-300 font-bold font-mono">
-                Status: {result.final_status}
+              <span className="text-xs px-3 py-0.5 rounded-full bg-[#30d158]/10 border border-[#30d158]/30 text-[#30d158] font-mono font-medium">
+                {result.final_status}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-950/80 p-4 rounded-xl border border-white/[0.06]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-black/50 p-4 rounded-xl border border-white/[0.06]">
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-semibold">Order ID</span>
-                <span className="font-mono font-bold text-white text-xs">{result.order_id}</span>
+                <span className="text-[#86868b] block text-[10px] uppercase">Order Reference</span>
+                <span className="font-mono font-semibold text-white text-xs">{result.order_id}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-semibold">Amount</span>
-                <span className="font-mono font-bold text-white text-xs">{result.amount_formatted}</span>
+                <span className="text-[#86868b] block text-[10px] uppercase">Amount</span>
+                <span className="font-mono font-semibold text-white text-xs">{result.amount_formatted}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-semibold">AI Suggested</span>
-                <span className="font-bold text-purple-300 text-xs">{result.ai_action}</span>
+                <span className="text-[#86868b] block text-[10px] uppercase">AI Suggested</span>
+                <span className="font-medium text-[#bf5af2] text-xs">{result.ai_action}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-semibold">Policy Verdict</span>
-                <span className="font-bold text-emerald-300 text-xs">{result.policy_verdict}</span>
+                <span className="text-[#86868b] block text-[10px] uppercase">Policy Verdict</span>
+                <span className="font-semibold text-[#30d158] text-xs">{result.policy_verdict}</span>
               </div>
             </div>
 
@@ -222,26 +236,26 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   onClose();
                   router.push(`/cases/${result.case_id}`);
                 }}
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-500/25"
+                className="px-4 py-2 rounded-full bg-white text-black hover:bg-[#e5e5ea] text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-md"
               >
-                <span>Inspect Full Case Dossier</span>
+                <span>Inspect Case Dossier</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
 
               <Link
                 href={`/pay/${result.case_id}`}
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/25"
+                className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
               >
-                <span>Open Payment Checkout Simulator</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open Hosted Checkout</span>
+                <ExternalLink className="w-3.5 h-3.5 text-[#64d2ff]" />
               </Link>
             </div>
           </div>
         )}
 
         {/* Scenarios Grid */}
-        <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-[58vh] overflow-y-auto pr-1">
           {scenarios.map((sc) => {
             const Icon = sc.icon;
             const isLoading = loadingScenario === sc.id;
@@ -249,20 +263,25 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
             return (
               <div
                 key={sc.id}
-                className="p-5 rounded-2xl border border-white/[0.06] bg-slate-950/50 hover:bg-slate-900/60 hover:border-blue-500/30 transition-all duration-200 space-y-3"
+                className="p-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.15] transition-all duration-200 space-y-3.5"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#0c1228] border border-white/[0.08]">
-                      <Icon className={`w-5 h-5 ${sc.iconColor}`} />
+                  <div className="flex items-start gap-3.5">
+                    <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] shrink-0 mt-0.5">
+                      <Icon className={`w-4 h-4 ${sc.iconColor}`} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">{sc.title}</h3>
-                      <span
-                        className={`inline-block text-[10px] px-2.5 py-0.5 rounded-full border font-bold uppercase tracking-wider mt-1 ${sc.tagColor}`}
-                      >
-                        {sc.tag}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm font-semibold text-white">{sc.title}</h3>
+                        <span
+                          className={`text-[10px] px-2.5 py-0.5 rounded-full border font-medium ${sc.tagColor}`}
+                        >
+                          {sc.tag}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#86868b] mt-0.5">
+                        {sc.subtitle}
+                      </p>
                     </div>
                   </div>
 
@@ -270,11 +289,11 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     type="button"
                     onClick={() => handleLaunchScenario(sc.id)}
                     disabled={isLoading}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition flex items-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer shadow-md shadow-blue-500/20"
+                    className="px-4 py-2 rounded-full bg-white text-black hover:bg-[#e5e5ea] text-xs font-semibold transition flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-[0.98]"
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0071e3]" />
                         <span>Running...</span>
                       </>
                     ) : (
@@ -286,38 +305,21 @@ export function DemoModal({ isOpen, onClose }: DemoModalProps) {
                   </button>
                 </div>
 
-                {/* 5-Step Pipeline Flow */}
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-[10px] pt-1 font-mono">
-                  <div className="p-2.5 rounded-xl bg-[#080d20] border border-white/[0.05]">
-                    <span className="text-slate-400 block font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                      1. Input
-                    </span>
-                    <span className="text-slate-300 line-clamp-2">{sc.input}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-[#080d20] border border-white/[0.05]">
-                    <span className="text-purple-400 block font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                      2. AI & ML
-                    </span>
-                    <span className="text-purple-200 line-clamp-2">{sc.decision}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-[#080d20] border border-white/[0.05]">
-                    <span className="text-amber-400 block font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                      3. Policy
-                    </span>
-                    <span className="text-amber-200 line-clamp-2">{sc.policy}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-[#080d20] border border-white/[0.05]">
-                    <span className="text-blue-400 block font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                      4. Execution
-                    </span>
-                    <span className="text-blue-200 line-clamp-2">{sc.execution}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-[#080d20] border border-white/[0.05]">
-                    <span className="text-emerald-400 block font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                      5. Outcome
-                    </span>
-                    <span className="text-emerald-200 line-clamp-2">{sc.outcome}</span>
-                  </div>
+                {/* 5-Step Pipeline Flow with Clean Horizontal Stepper */}
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-1">
+                  {sc.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-black/40 border border-white/[0.05] flex flex-col justify-between space-y-1"
+                    >
+                      <span className="text-[10px] text-[#86868b] font-mono font-medium">
+                        {step.label}
+                      </span>
+                      <span className="text-[11px] text-white/90 leading-tight">
+                        {step.text}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             );
